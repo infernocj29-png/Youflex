@@ -358,13 +358,27 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
 <script>
 /* ============================================================
    API CONFIGURATION & ENGINE
-   All calls go through our own backend proxy (/api/*) instead of
-   hitting TMDB directly — keeps the API key off the client.
+   Calls TMDB directly from the client. Note: this puts the key
+   in plain view in your page source (anyone can read it via
+   dev tools / view-source). Fine for a personal/free-tier key;
+   swap back to the /api/* backend proxy if this ever needs to
+   be hidden (e.g. a paid or rate-sensitive key).
 ============================================================ */
-const API = '/api';
+const TMDB_API_KEY = '33ef7aaa3002731060f718f25dd995ac';
+const TMDB_BASE = 'https://api.themoviedb.org/3';
 const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 const HERO_IMAGE_BASE = 'https://image.tmdb.org/t/p/original';
 const PROVIDER_LOGO_BASE = 'https://image.tmdb.org/t/p/w92';
+
+// Tiny helper that mimics the old /api/* proxy's call shape, but hits TMDB directly
+function tmdb(path, params = {}) {
+    const url = new URL(`${TMDB_BASE}${path}`);
+    url.searchParams.set('api_key', TMDB_API_KEY);
+    Object.keys(params).forEach(k => {
+        if (params[k] !== undefined && params[k] !== null) url.searchParams.set(k, params[k]);
+    });
+    return fetch(url.toString());
+}
 
 // Static fallback so labels still render before the dynamic genre fetch resolves
 let GENRES = {
@@ -403,8 +417,8 @@ function initApp() {
 async function loadAllGenres() {
     try {
         const [movieGenres, tvGenres] = await Promise.all([
-            fetch(`${API}/genres/movie`).then(r => r.json()),
-            fetch(`${API}/genres/tv`).then(r => r.json())
+            tmdb('/genre/movie/list').then(r => r.json()),
+            tmdb('/genre/tv/list').then(r => r.json())
         ]);
         const merged = {};
         [...(movieGenres.genres || []), ...(tvGenres.genres || [])].forEach(g => { merged[g.id] = g.name; });
@@ -419,7 +433,7 @@ async function loadGenreChips(type) {
     // remove any previously injected dynamic chips
     nav.querySelectorAll('.genre-chip').forEach(el => el.remove());
     try {
-        const res = await fetch(`${API}/genres/${type}`);
+        const res = await tmdb(`/genre/${type}/list`);
         const data = await res.json();
         (data.genres || []).forEach(g => {
             const chip = document.createElement('div');
@@ -456,7 +470,7 @@ function goHome(element) {
 ============================================================ */
 async function fetchHeroBanner() {
     try {
-        const res = await fetch(`${API}/trending?time_window=day`);
+        const res = await tmdb('/trending/all/day');
         const data = await res.json();
         if (data.results && data.results.length > 0) {
             currentHeroItem = data.results[0];
@@ -507,7 +521,7 @@ async function renderHero(item) {
     // Trailer button — details endpoint already appends videos
     id('heroTrailerBtn').style.display = 'none';
     try {
-        const details = await fetch(`${API}/details/${type}/${item.id}`).then(r => r.json());
+        const details = await tmdb(`/${type}/${item.id}`, { append_to_response: 'videos,images' }).then(r => r.json());
         const trailer = findTrailer(details);
         if (trailer) {
             id('heroTrailerBtn').style.display = 'flex';
@@ -533,7 +547,7 @@ async function fetchCast(mediaId, type) {
     const castContainer = id('heroCastList');
     castContainer.innerHTML = '';
     try {
-        const res = await fetch(`${API}/credits/${type}/${mediaId}`);
+        const res = await tmdb(`/${type}/${mediaId}/credits`);
         const data = await res.json();
         const cast = (data.cast || []).slice(0, 5);
 
@@ -553,7 +567,7 @@ async function fetchEpisodes(tvId) {
     const epContainer = id('heroEpisodesList');
     epContainer.innerHTML = '';
     try {
-        const res = await fetch(`${API}/tv/${tvId}/season/1`);
+        const res = await tmdb(`/tv/${tvId}/season/1`);
         const data = await res.json();
         const episodes = (data.episodes || []).slice(0, 4);
 
@@ -587,15 +601,16 @@ async function fetchCategory(category, element) {
     }
     id('gridHeading').style.display = 'none';
 
-    let endpoint = `${API}/trending?time_window=week`;
-    if (category === 'tv') endpoint = `${API}/discover?type=tv`;
-    if (category === 'movie') endpoint = `${API}/discover?type=movie`;
-    if (category === 'upcoming') endpoint = `${API}/upcoming`;
-    if (category === 'now-playing') endpoint = `${API}/now-playing`;
-    if (category === 'top-rated') endpoint = `${API}/top-rated/${currentContext}`;
+    let path = '/trending/all/week';
+    let params = {};
+    if (category === 'tv') path = '/discover/tv';
+    if (category === 'movie') path = '/discover/movie';
+    if (category === 'upcoming') path = '/movie/upcoming';
+    if (category === 'now-playing') path = '/movie/now_playing';
+    if (category === 'top-rated') path = `/${currentContext}/top_rated`;
 
     try {
-        const res = await fetch(endpoint);
+        const res = await tmdb(path, params);
         const data = await res.json();
         renderGrid(data.results || []);
     } catch (e) {
@@ -609,7 +624,7 @@ async function fetchByGenre(genreId, type, element) {
     id('gridHeading').style.display = 'none';
 
     try {
-        const res = await fetch(`${API}/discover?type=${type}&with_genres=${genreId}`);
+        const res = await tmdb(`/discover/${type}`, { with_genres: genreId });
         const data = await res.json();
         renderGrid(data.results || []);
     } catch (e) {
@@ -619,7 +634,10 @@ async function fetchByGenre(genreId, type, element) {
 
 async function surpriseMe() {
     try {
-        const item = await fetch(`${API}/surprise-me`).then(r => r.json());
+        const data = await tmdb('/trending/all/day').then(r => r.json());
+        const results = (data.results || []).filter(r => r.media_type !== 'person');
+        if (!results.length) return;
+        const item = results[Math.floor(Math.random() * results.length)];
         const type = item.media_type || (item.title ? 'movie' : 'tv');
         openDetailsModal(item.id, type);
     } catch (e) {
@@ -727,7 +745,7 @@ function setupSearchEngine() {
         }
         debounceTimer = setTimeout(async () => {
             try {
-                const res = await fetch(`${API}/search?q=${encodeURIComponent(query)}`);
+                const res = await tmdb('/search/multi', { query });
                 const data = await res.json();
                 const results = (data.results || []).filter(r => r.media_type !== 'person').slice(0, 5);
 
@@ -767,7 +785,7 @@ async function openDetailsModal(mediaId, type) {
     modal.classList.add('show');
 
     try {
-        const item = await fetch(`${API}/details/${type}/${mediaId}`).then(r => r.json());
+        const item = await tmdb(`/${type}/${mediaId}`, { append_to_response: 'videos,images' }).then(r => r.json());
 
         const title = item.title || item.name;
         const overview = item.overview || 'No description available.';
@@ -815,7 +833,7 @@ async function openDetailsModal(mediaId, type) {
 async function loadModalProviders(mediaId, type) {
     const container = id('modalProviders');
     try {
-        const data = await fetch(`${API}/watch-providers/${type}/${mediaId}`).then(r => r.json());
+        const data = await tmdb(`/${type}/${mediaId}/watch/providers`).then(r => r.json());
         // Try to find a region with data; prefer US, else first available
         const regions = data.results || {};
         const region = regions.US || Object.values(regions)[0];
@@ -833,7 +851,7 @@ async function loadModalProviders(mediaId, type) {
 async function loadModalCast(mediaId, type) {
     const container = id('modalCast');
     try {
-        const data = await fetch(`${API}/credits/${type}/${mediaId}`).then(r => r.json());
+        const data = await tmdb(`/${type}/${mediaId}/credits`).then(r => r.json());
         const cast = (data.cast || []).slice(0, 10);
         container.innerHTML = cast.map(p => `
             <div class="cast-grid-item">
@@ -850,7 +868,7 @@ async function loadModalCast(mediaId, type) {
 async function loadModalSimilar(mediaId, type) {
     const container = id('modalSimilar');
     try {
-        const data = await fetch(`${API}/similar/${type}/${mediaId}`).then(r => r.json());
+        const data = await tmdb(`/${type}/${mediaId}/similar`).then(r => r.json());
         const items = (data.results || []).slice(0, 12);
         container.innerHTML = items.map(item => `
             <div class="similar-card" onclick="openDetailsModal(${item.id}, '${type}')">
