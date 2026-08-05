@@ -78,6 +78,14 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 .autocomplete-poster { width: 36px; height: 50px; border-radius: 4px; object-fit: cover; }
 .autocomplete-title { font-weight: 600; font-size: 0.85rem; color: var(--txt); }
 
+/* Surprise Me button — matches header icon language */
+.surprise-btn {
+    width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12); color: #fff; cursor: pointer; font-size: 0.85rem;
+    display: flex; align-items: center; justify-content: center; transition: .2s; flex-shrink: 0;
+}
+.surprise-btn:hover { background: var(--accent); border-color: var(--accent); transform: rotate(20deg); }
+
 /* ============================================================
    HERO SHOWCASE SECTION
 ============================================================ */
@@ -120,6 +128,13 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
     display: flex; align-items: center; gap: 8px; backdrop-filter: blur(10px); transition: 0.2s;
 }
 .btn-wishlist:hover { background: rgba(255,255,255,0.18); }
+.btn-wishlist.in-list { background: var(--accent); border-color: var(--accent); }
+.btn-trailer {
+    background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.3);
+    padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; gap: 8px; transition: 0.2s;
+}
+.btn-trailer:hover { border-color: var(--accent2); color: var(--accent2); }
 
 /* Episodes Card */
 .hero-episodes-card { position: absolute; right: 2.5rem; bottom: 2.5rem; z-index: 10; display: flex; flex-direction: column; align-items: flex-end; }
@@ -144,6 +159,8 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 .category-item { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); padding: 8px 18px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: 0.2s; border: 1px solid rgba(255,255,255,0.08); }
 .category-item:hover, .category-item.active { background: #fff; color: #000; border-color: #fff; }
 
+.section-heading { font-size: 1.05rem; font-weight: 700; margin: 0 0 0.9rem; display: flex; align-items: center; gap: 8px; }
+
 .movies-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
 .movie-card { background: var(--card); border-radius: 10px; overflow: hidden; cursor: pointer; position: relative; transition: transform 0.25s; border: 1px solid rgba(255,255,255,0.05); }
 .movie-card:hover { transform: translateY(-6px); }
@@ -152,6 +169,40 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 .movie-info { padding: 10px; }
 .movie-title { font-size: 0.85rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
 .movie-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); }
+
+/* Wishlist heart on poster */
+.wishlist-heart {
+    position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); color: #fff; display: flex;
+    align-items: center; justify-content: center; font-size: 0.8rem; z-index: 5; transition: .2s; border: 1px solid rgba(255,255,255,0.15);
+}
+.wishlist-heart:hover { background: var(--accent); border-color: var(--accent); transform: scale(1.1); }
+.wishlist-heart.active { background: var(--accent); border-color: var(--accent); }
+.wishlist-heart.active i { font-weight: 900; }
+
+.empty-state { text-align: center; padding: 4rem 1rem; color: var(--muted); }
+.empty-state i { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.5; }
+
+/* Horizontal similar-titles row inside modal */
+.similar-row { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+.similar-card { flex-shrink: 0; width: 120px; cursor: pointer; border-radius: 8px; overflow: hidden; background: var(--card); border: 1px solid rgba(255,255,255,0.05); transition: transform .2s; }
+.similar-card:hover { transform: translateY(-4px); }
+.similar-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
+.similar-card-title { font-size: 0.72rem; font-weight: 600; padding: 6px 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Cast grid inside modal */
+.cast-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 14px; }
+.cast-grid-item { text-align: center; }
+.cast-grid-photo { width: 100%; aspect-ratio: 1/1; border-radius: 50%; object-fit: cover; background: #1a2232; margin-bottom: 6px; }
+.cast-grid-name { font-size: 0.78rem; font-weight: 700; }
+.cast-grid-character { font-size: 0.7rem; color: var(--muted); }
+
+/* Watch provider logos */
+.provider-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.provider-logo { width: 46px; height: 46px; border-radius: 10px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); }
+.provider-empty { font-size: 0.85rem; color: var(--muted); }
+
+.modal-section-title { font-size: 0.95rem; font-weight: 700; margin: 1.6rem 0 0.8rem; letter-spacing: 0.3px; }
 
 /* MODALS */
 .modal { position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:2000; display:none; align-items:center; justify-content:center; padding:1rem; }
@@ -206,10 +257,11 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
                 <span>YOUFLEX</span>
             </a>
             <ul class="nav-links">
-                <li><a href="#" class="active" onclick="fetchCategory('trending', this)">Home</a></li>
-                <li><a href="#" onclick="fetchCategory('tv', this)">TV Shows</a></li>
-                <li><a href="#" onclick="fetchCategory('movie', this)">Movies</a></li>
+                <li><a href="#" class="active" onclick="goHome(this)">Home</a></li>
+                <li><a href="#" onclick="setContext('tv', this)">TV Shows</a></li>
+                <li><a href="#" onclick="setContext('movie', this)">Movies</a></li>
                 <li><a href="#" onclick="fetchCategory('upcoming', this)">Upcoming</a></li>
+                <li><a href="#" onclick="showWishlist(this)">My List</a></li>
             </ul>
         </div>
 
@@ -221,6 +273,7 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
                 </div>
                 <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
             </div>
+            <button class="surprise-btn" id="surpriseBtn" title="Surprise Me"><i class="fa-solid fa-dice"></i></button>
         </div>
     </header>
 
@@ -251,6 +304,7 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
 
             <div class="hero-actions">
                 <button class="btn-play-now" id="heroPlayBtn"><i class="fa-solid fa-play"></i> Play Now</button>
+                <button class="btn-trailer" id="heroTrailerBtn" style="display:none;"><i class="fa-brands fa-youtube"></i> Trailer</button>
                 <button class="btn-wishlist" id="heroWishlistBtn"><i class="fa-solid fa-plus"></i> My Wishlist</button>
             </div>
         </div>
@@ -265,13 +319,12 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
     <main class="content-wrapper">
         <div class="categories-nav" id="categoryNav">
             <div class="category-item active" onclick="fetchCategory('trending', this)">Trending</div>
-            <div class="category-item" onclick="fetchCategory('action', this)">Action</div>
-            <div class="category-item" onclick="fetchCategory('comedy', this)">Comedy</div>
-            <div class="category-item" onclick="fetchCategory('drama', this)">Drama</div>
-            <div class="category-item" onclick="fetchCategory('scifi', this)">Sci-Fi</div>
-            <div class="category-item" onclick="fetchCategory('animation', this)">Animation</div>
+            <div class="category-item" onclick="fetchCategory('now-playing', this)">Now Playing</div>
+            <div class="category-item" onclick="fetchCategory('top-rated', this)">Top Rated</div>
+            <!-- Dynamic genre chips populate here -->
         </div>
 
+        <h2 class="section-heading" id="gridHeading" style="display:none;"></h2>
         <div class="movies-grid" id="moviesGrid"></div>
     </main>
 
@@ -283,7 +336,7 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
         </div>
     </div>
 
-    <!-- Embed Video Player Modal -->
+    <!-- Embed Video Player Modal (also used for YouTube trailers) -->
     <div class="streaming-modal" id="streamModal">
         <div class="streaming-inner">
             <div class="stream-topbar">
@@ -291,7 +344,7 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
                 <div class="stream-close-btn" onclick="closeStream()"><i class="fa-solid fa-xmark"></i></div>
             </div>
             <div class="stream-video-area">
-                <iframe class="stream-iframe" id="streamIframe" allowfullscreen></iframe>
+                <iframe class="stream-iframe" id="streamIframe" allowfullscreen allow="autoplay; encrypted-media"></iframe>
             </div>
         </div>
     </div>
@@ -305,22 +358,27 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
 <script>
 /* ============================================================
    API CONFIGURATION & ENGINE
+   All calls go through our own backend proxy (/api/*) instead of
+   hitting TMDB directly — keeps the API key off the client.
 ============================================================ */
-const API_KEY = '33ef7aaa3002731060f718f25dd995ac';
-const BASE_URL = 'https://api.themoviedb.org/3';
+const API = '/api';
 const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 const HERO_IMAGE_BASE = 'https://image.tmdb.org/t/p/original';
+const PROVIDER_LOGO_BASE = 'https://image.tmdb.org/t/p/w92';
 
-// Genre Map Table for TMDB
-const GENRES = {
+// Static fallback so labels still render before the dynamic genre fetch resolves
+let GENRES = {
     28: "Action", 12: "Adventure", 16: "Animation", 35: "Comedy", 80: "Crime",
     99: "Documentary", 18: "Drama", 10751: "Family", 14: "Fantasy", 36: "History",
     27: "Horror", 10402: "Music", 9648: "Mystery", 10749: "Romance", 878: "Sci-Fi",
     10770: "TV Movie", 53: "Thriller", 10752: "War", 37: "Western", 10759: "Action & Adventure",
-    10765: "Sci-Fi & Fantasy"
+    10765: "Sci-Fi & Fantasy", 10762: "Kids", 10763: "News", 10764: "Reality", 10766: "Soap",
+    10767: "Talk", 10768: "War & Politics"
 };
 
 let currentHeroItem = null;
+let currentContext = 'movie'; // 'movie' | 'tv' — drives which genre set is shown
+const WISHLIST_KEY = 'youflex_wishlist';
 
 window.addEventListener('load', () => {
     initApp();
@@ -330,18 +388,75 @@ window.addEventListener('load', () => {
 });
 
 function initApp() {
+    loadAllGenres();
     fetchHeroBanner();
     fetchCategory('trending');
+    loadGenreChips('movie');
     setupSearchEngine();
     setupThemeToggle();
+    id('surpriseBtn').addEventListener('click', surpriseMe);
 }
 
 /* ============================================================
-   HERO BANNER API POPULATION
+   GENRES — fetched dynamically, used for labels + filter chips
+============================================================ */
+async function loadAllGenres() {
+    try {
+        const [movieGenres, tvGenres] = await Promise.all([
+            fetch(`${API}/genres/movie`).then(r => r.json()),
+            fetch(`${API}/genres/tv`).then(r => r.json())
+        ]);
+        const merged = {};
+        [...(movieGenres.genres || []), ...(tvGenres.genres || [])].forEach(g => { merged[g.id] = g.name; });
+        GENRES = { ...GENRES, ...merged };
+    } catch (e) {
+        console.error('Genre load failed, using fallback labels:', e);
+    }
+}
+
+async function loadGenreChips(type) {
+    const nav = id('categoryNav');
+    // remove any previously injected dynamic chips
+    nav.querySelectorAll('.genre-chip').forEach(el => el.remove());
+    try {
+        const res = await fetch(`${API}/genres/${type}`);
+        const data = await res.json();
+        (data.genres || []).forEach(g => {
+            const chip = document.createElement('div');
+            chip.className = 'category-item genre-chip';
+            chip.textContent = g.name;
+            chip.onclick = () => fetchByGenre(g.id, type, chip);
+            nav.appendChild(chip);
+        });
+    } catch (e) {
+        console.error('Error loading genre chips:', e);
+    }
+}
+
+function setContext(type, element) {
+    currentContext = type;
+    if (element) {
+        document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+    }
+    loadGenreChips(type);
+    fetchCategory(type);
+}
+
+function goHome(element) {
+    currentContext = 'movie';
+    document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
+    element.classList.add('active');
+    loadGenreChips('movie');
+    fetchCategory('trending');
+}
+
+/* ============================================================
+   HERO BANNER
 ============================================================ */
 async function fetchHeroBanner() {
     try {
-        const res = await fetch(`${BASE_URL}/trending/all/day?api_key=${API_KEY}`);
+        const res = await fetch(`${API}/trending?time_window=day`);
         const data = await res.json();
         if (data.results && data.results.length > 0) {
             currentHeroItem = data.results[0];
@@ -354,17 +469,17 @@ async function fetchHeroBanner() {
 
 async function renderHero(item) {
     const isTV = item.media_type === 'tv' || item.first_air_date !== undefined;
+    const type = isTV ? 'tv' : 'movie';
     const title = item.title || item.name || 'Featured Title';
     const overview = item.overview || 'No overview description available.';
     const backdrop = item.backdrop_path ? `${HERO_IMAGE_BASE}${item.backdrop_path}` : '';
     const dateStr = item.release_date || item.first_air_date || '2024';
     const year = dateStr.split('-')[0];
     const matchScore = Math.round((item.vote_average || 8.5) * 10);
-    
-    // Convert genre IDs to names
+
     const genreNames = (item.genre_ids || [])
         .slice(0, 3)
-        .map(id => GENRES[id])
+        .map(gid => GENRES[gid])
         .filter(Boolean)
         .join(', ') || (isTV ? 'TV Series' : 'Movie');
 
@@ -378,22 +493,47 @@ async function renderHero(item) {
         id('heroSection').style.backgroundImage = `url('${backdrop}')`;
     }
 
-    id('heroPlayBtn').onclick = () => openStream(item.id, isTV ? 'tv' : 'movie');
+    id('heroPlayBtn').onclick = () => openStream(item.id, type);
+    updateWishlistButton(id('heroWishlistBtn'), item.id, type, title, item.poster_path);
+    id('heroWishlistBtn').onclick = () => toggleWishlist({ id: item.id, type, title, poster_path: item.poster_path, vote_average: item.vote_average }, null, id('heroWishlistBtn'));
 
-    // Load Cast Avatars & Episodes
-    fetchCast(item.id, isTV ? 'tv' : 'movie');
+    fetchCast(item.id, type);
     if (isTV) {
         fetchEpisodes(item.id);
     } else {
         id('heroEpisodesCard').style.display = 'none';
     }
+
+    // Trailer button — details endpoint already appends videos
+    id('heroTrailerBtn').style.display = 'none';
+    try {
+        const details = await fetch(`${API}/details/${type}/${item.id}`).then(r => r.json());
+        const trailer = findTrailer(details);
+        if (trailer) {
+            id('heroTrailerBtn').style.display = 'flex';
+            id('heroTrailerBtn').onclick = () => playTrailer(trailer.key, title);
+        }
+    } catch (e) { /* trailer is optional, fail quietly */ }
+}
+
+function findTrailer(details) {
+    const vids = (details.videos && details.videos.results) || [];
+    return vids.find(v => v.site === 'YouTube' && v.type === 'Trailer')
+        || vids.find(v => v.site === 'YouTube' && v.type === 'Teaser')
+        || vids.find(v => v.site === 'YouTube');
+}
+
+function playTrailer(key, title) {
+    id('streamTitle').innerText = `Trailer — ${title}`;
+    id('streamIframe').src = `https://www.youtube.com/embed/${key}?autoplay=1`;
+    id('streamModal').classList.add('show');
 }
 
 async function fetchCast(mediaId, type) {
     const castContainer = id('heroCastList');
     castContainer.innerHTML = '';
     try {
-        const res = await fetch(`${BASE_URL}/${type}/${mediaId}/credits?api_key=${API_KEY}`);
+        const res = await fetch(`${API}/credits/${type}/${mediaId}`);
         const data = await res.json();
         const cast = (data.cast || []).slice(0, 5);
 
@@ -413,13 +553,13 @@ async function fetchEpisodes(tvId) {
     const epContainer = id('heroEpisodesList');
     epContainer.innerHTML = '';
     try {
-        const res = await fetch(`${BASE_URL}/tv/${tvId}/season/1?api_key=${API_KEY}`);
+        const res = await fetch(`${API}/tv/${tvId}/season/1`);
         const data = await res.json();
         const episodes = (data.episodes || []).slice(0, 4);
 
         if (episodes.length > 0) {
             id('heroEpisodesCard').style.display = 'flex';
-            episodes.forEach((ep, idx) => {
+            episodes.forEach((ep) => {
                 const epCard = document.createElement('div');
                 epCard.className = 'episode-card-item';
                 const still = ep.still_path ? `${IMAGE_BASE}${ep.still_path}` : 'https://via.placeholder.com/140x90';
@@ -442,19 +582,17 @@ async function fetchEpisodes(tvId) {
 ============================================================ */
 async function fetchCategory(category, element) {
     if (element) {
-        document.querySelectorAll('.category-item, .nav-links a').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
         element.classList.add('active');
     }
+    id('gridHeading').style.display = 'none';
 
-    let endpoint = `${BASE_URL}/trending/all/week?api_key=${API_KEY}`;
-    if (category === 'tv') endpoint = `${BASE_URL}/discover/tv?api_key=${API_KEY}`;
-    if (category === 'movie') endpoint = `${BASE_URL}/discover/movie?api_key=${API_KEY}`;
-    if (category === 'upcoming') endpoint = `${BASE_URL}/movie/upcoming?api_key=${API_KEY}`;
-    if (category === 'action') endpoint = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=28`;
-    if (category === 'comedy') endpoint = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=35`;
-    if (category === 'drama') endpoint = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=18`;
-    if (category === 'scifi') endpoint = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=878`;
-    if (category === 'animation') endpoint = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=16`;
+    let endpoint = `${API}/trending?time_window=week`;
+    if (category === 'tv') endpoint = `${API}/discover?type=tv`;
+    if (category === 'movie') endpoint = `${API}/discover?type=movie`;
+    if (category === 'upcoming') endpoint = `${API}/upcoming`;
+    if (category === 'now-playing') endpoint = `${API}/now-playing`;
+    if (category === 'top-rated') endpoint = `${API}/top-rated/${currentContext}`;
 
     try {
         const res = await fetch(endpoint);
@@ -465,20 +603,52 @@ async function fetchCategory(category, element) {
     }
 }
 
+async function fetchByGenre(genreId, type, element) {
+    document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
+    if (element) element.classList.add('active');
+    id('gridHeading').style.display = 'none';
+
+    try {
+        const res = await fetch(`${API}/discover?type=${type}&with_genres=${genreId}`);
+        const data = await res.json();
+        renderGrid(data.results || []);
+    } catch (e) {
+        console.error("Error loading genre grid:", e);
+    }
+}
+
+async function surpriseMe() {
+    try {
+        const item = await fetch(`${API}/surprise-me`).then(r => r.json());
+        const type = item.media_type || (item.title ? 'movie' : 'tv');
+        openDetailsModal(item.id, type);
+    } catch (e) {
+        console.error('Surprise Me failed:', e);
+    }
+}
+
 function renderGrid(items) {
     const grid = id('moviesGrid');
     grid.innerHTML = '';
 
+    if (!items.length) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><i class="fa-solid fa-clapperboard"></i><p>Nothing here yet.</p></div>`;
+        return;
+    }
+
     items.forEach(item => {
+        if (item.media_type === 'person') return; // skip people in mixed trending results
         const title = item.title || item.name;
         const poster = item.poster_path ? `${IMAGE_BASE}${item.poster_path}` : 'https://via.placeholder.com/300x450';
         const rating = item.vote_average ? item.vote_average.toFixed(1) : 'N/A';
-        const type = item.title ? 'movie' : 'tv';
+        const type = item.media_type || (item.title ? 'movie' : 'tv');
+        const inList = isInWishlist(item.id, type);
 
         const card = document.createElement('div');
         card.className = 'movie-card';
         card.innerHTML = `
             <div class="movie-poster">
+                <div class="wishlist-heart ${inList ? 'active' : ''}" title="Add to My List"><i class="fa-solid fa-heart"></i></div>
                 <img src="${poster}" alt="${title}" loading="lazy">
             </div>
             <div class="movie-info">
@@ -490,43 +660,92 @@ function renderGrid(items) {
             </div>
         `;
         card.onclick = () => openDetailsModal(item.id, type);
+        card.querySelector('.wishlist-heart').addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            toggleWishlist({ id: item.id, type, title, poster_path: item.poster_path, vote_average: item.vote_average }, ev.currentTarget);
+        });
         grid.appendChild(card);
     });
 }
 
 /* ============================================================
-   SEARCH AUTOCOMPLETE API
+   WISHLIST ("My List") — persisted in localStorage
+============================================================ */
+function getWishlist() {
+    try { return JSON.parse(localStorage.getItem(WISHLIST_KEY)) || []; }
+    catch (e) { return []; }
+}
+function saveWishlist(list) { localStorage.setItem(WISHLIST_KEY, JSON.stringify(list)); }
+function isInWishlist(itemId, type) {
+    return getWishlist().some(w => w.id === itemId && w.type === type);
+}
+function toggleWishlist(item, heartEl, buttonEl) {
+    let list = getWishlist();
+    const exists = list.some(w => w.id === item.id && w.type === item.type);
+    if (exists) {
+        list = list.filter(w => !(w.id === item.id && w.type === item.type));
+    } else {
+        list.push(item);
+    }
+    saveWishlist(list);
+    if (heartEl) heartEl.classList.toggle('active', !exists);
+    if (buttonEl) updateWishlistButton(buttonEl, item.id, item.type, item.title, item.poster_path, !exists);
+}
+function updateWishlistButton(btn, itemId, type, title, poster_path, forceState) {
+    const inList = forceState !== undefined ? forceState : isInWishlist(itemId, type);
+    btn.innerHTML = inList
+        ? '<i class="fa-solid fa-check"></i> In My List'
+        : '<i class="fa-solid fa-plus"></i> My Wishlist';
+    btn.classList.toggle('in-list', inList);
+}
+function showWishlist(element) {
+    document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
+    if (element) element.classList.add('active');
+    document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
+
+    const heading = id('gridHeading');
+    heading.style.display = 'flex';
+    heading.innerHTML = '<i class="fa-solid fa-heart" style="color:var(--accent);"></i> My List';
+
+    renderGrid(getWishlist());
+}
+
+/* ============================================================
+   SEARCH AUTOCOMPLETE
 ============================================================ */
 function setupSearchEngine() {
     const input = id('searchInput');
     const dropdown = id('autocompleteDropdown');
+    let debounceTimer;
 
-    input.addEventListener('input', async (e) => {
+    input.addEventListener('input', (e) => {
+        clearTimeout(debounceTimer);
         const query = e.target.value.trim();
         if (query.length < 2) {
             dropdown.classList.remove('show');
             return;
         }
+        debounceTimer = setTimeout(async () => {
+            try {
+                const res = await fetch(`${API}/search?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                const results = (data.results || []).filter(r => r.media_type !== 'person').slice(0, 5);
 
-        try {
-            const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
-            const data = await res.json();
-            const results = (data.results || []).slice(0, 5);
-
-            if (results.length > 0) {
-                dropdown.innerHTML = results.map(item => `
-                    <div class="autocomplete-item" onclick="openDetailsModal(${item.id}, '${item.media_type || 'movie'}')">
-                        <img class="autocomplete-poster" src="${item.poster_path ? IMAGE_BASE + item.poster_path : 'https://via.placeholder.com/40'}" alt="">
-                        <div class="autocomplete-title">${item.title || item.name}</div>
-                    </div>
-                `).join('');
-                dropdown.classList.add('show');
-            } else {
-                dropdown.classList.remove('show');
+                if (results.length > 0) {
+                    dropdown.innerHTML = results.map(item => `
+                        <div class="autocomplete-item" onclick="openDetailsModal(${item.id}, '${item.media_type || 'movie'}')">
+                            <img class="autocomplete-poster" src="${item.poster_path ? IMAGE_BASE + item.poster_path : 'https://via.placeholder.com/40'}" alt="">
+                            <div class="autocomplete-title">${item.title || item.name}</div>
+                        </div>
+                    `).join('');
+                    dropdown.classList.add('show');
+                } else {
+                    dropdown.classList.remove('show');
+                }
+            } catch (e) {
+                console.error("Search API Error:", e);
             }
-        } catch (e) {
-            console.error("Search API Error:", e);
-        }
+        }, 250);
     });
 
     document.addEventListener('click', (e) => {
@@ -543,26 +762,104 @@ async function openDetailsModal(mediaId, type) {
     const modal = id('detailsModal');
     const modalBody = id('modalBody');
     id('autocompleteDropdown').classList.remove('show');
-    
+
     modalBody.innerHTML = '<div style="text-align:center; padding:2rem;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>';
     modal.classList.add('show');
 
     try {
-        const res = await fetch(`${BASE_URL}/${type}/${mediaId}?api_key=${API_KEY}`);
-        const item = await res.json();
-        
+        const item = await fetch(`${API}/details/${type}/${mediaId}`).then(r => r.json());
+
         const title = item.title || item.name;
         const overview = item.overview || 'No description available.';
         const rating = item.vote_average ? item.vote_average.toFixed(1) : 'N/A';
+        const trailer = findTrailer(item);
+        const inList = isInWishlist(mediaId, type);
 
         modalBody.innerHTML = `
             <h2 style="font-family:var(--fd); font-size:2.5rem; margin-bottom:0.5rem;">${title}</h2>
             <p style="color:var(--muted); margin-bottom:1rem; font-size:0.9rem;">Rating: ⭐ ${rating} / 10</p>
             <p style="line-height:1.6; color:rgba(255,255,255,0.8); margin-bottom:1.5rem;">${overview}</p>
-            <button class="btn-play-now" onclick="openStream(${mediaId}, '${type}')"><i class="fa-solid fa-play"></i> Watch Stream</button>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <button class="btn-play-now" id="modalPlayBtn"><i class="fa-solid fa-play"></i> Watch Stream</button>
+                ${trailer ? `<button class="btn-trailer" id="modalTrailerBtn"><i class="fa-brands fa-youtube"></i> Trailer</button>` : ''}
+                <button class="btn-wishlist ${inList ? 'in-list' : ''}" id="modalWishlistBtn">
+                    ${inList ? '<i class="fa-solid fa-check"></i> In My List' : '<i class="fa-solid fa-plus"></i> My Wishlist'}
+                </button>
+            </div>
+
+            <div class="modal-section-title">Where to Watch</div>
+            <div class="provider-row" id="modalProviders"><span class="provider-empty">Loading…</span></div>
+
+            <div class="modal-section-title">Cast</div>
+            <div class="cast-grid" id="modalCast"></div>
+
+            <div class="modal-section-title">More Like This</div>
+            <div class="similar-row" id="modalSimilar"></div>
         `;
+
+        id('modalPlayBtn').onclick = () => openStream(mediaId, type);
+        if (trailer) id('modalTrailerBtn').onclick = () => playTrailer(trailer.key, title);
+        id('modalWishlistBtn').onclick = (ev) => toggleWishlist(
+            { id: mediaId, type, title, poster_path: item.poster_path, vote_average: item.vote_average },
+            null, ev.currentTarget
+        );
+
+        loadModalProviders(mediaId, type);
+        loadModalCast(mediaId, type);
+        loadModalSimilar(mediaId, type);
     } catch (e) {
         modalBody.innerHTML = '<p>Error loading item details.</p>';
+    }
+}
+
+async function loadModalProviders(mediaId, type) {
+    const container = id('modalProviders');
+    try {
+        const data = await fetch(`${API}/watch-providers/${type}/${mediaId}`).then(r => r.json());
+        // Try to find a region with data; prefer US, else first available
+        const regions = data.results || {};
+        const region = regions.US || Object.values(regions)[0];
+        const providers = region ? [...(region.flatrate || []), ...(region.rent || []), ...(region.buy || [])] : [];
+        const unique = Array.from(new Map(providers.map(p => [p.provider_id, p])).values());
+
+        container.innerHTML = unique.length
+            ? unique.map(p => `<img class="provider-logo" src="${PROVIDER_LOGO_BASE}${p.logo_path}" title="${p.provider_name}" alt="${p.provider_name}">`).join('')
+            : '<span class="provider-empty">Not currently available for streaming in your region.</span>';
+    } catch (e) {
+        container.innerHTML = '<span class="provider-empty">Provider info unavailable.</span>';
+    }
+}
+
+async function loadModalCast(mediaId, type) {
+    const container = id('modalCast');
+    try {
+        const data = await fetch(`${API}/credits/${type}/${mediaId}`).then(r => r.json());
+        const cast = (data.cast || []).slice(0, 10);
+        container.innerHTML = cast.map(p => `
+            <div class="cast-grid-item">
+                <img class="cast-grid-photo" src="${p.profile_path ? IMAGE_BASE + p.profile_path : 'https://via.placeholder.com/100?text=%20'}" alt="${p.name}">
+                <div class="cast-grid-name">${p.name}</div>
+                <div class="cast-grid-character">${p.character || ''}</div>
+            </div>
+        `).join('') || '<span class="provider-empty">No cast info available.</span>';
+    } catch (e) {
+        container.innerHTML = '<span class="provider-empty">Cast info unavailable.</span>';
+    }
+}
+
+async function loadModalSimilar(mediaId, type) {
+    const container = id('modalSimilar');
+    try {
+        const data = await fetch(`${API}/similar/${type}/${mediaId}`).then(r => r.json());
+        const items = (data.results || []).slice(0, 12);
+        container.innerHTML = items.map(item => `
+            <div class="similar-card" onclick="openDetailsModal(${item.id}, '${type}')">
+                <img src="${item.poster_path ? IMAGE_BASE + item.poster_path : 'https://via.placeholder.com/120x180'}" alt="${item.title || item.name}">
+                <div class="similar-card-title">${item.title || item.name}</div>
+            </div>
+        `).join('') || '<span class="provider-empty">No similar titles found.</span>';
+    } catch (e) {
+        container.innerHTML = '<span class="provider-empty">Unavailable right now.</span>';
     }
 }
 
@@ -572,9 +869,8 @@ function openStream(mediaId, type, season = 1, episode = 1) {
     closeModal();
     const streamModal = id('streamModal');
     const iframe = id('streamIframe');
-    
-    // Auto-embed multi-source streaming URL
-    const embedUrl = type === 'tv' 
+
+    const embedUrl = type === 'tv'
         ? `https://vidsrc.to/embed/tv/${mediaId}/${season}/${episode}`
         : `https://vidsrc.to/embed/movie/${mediaId}`;
 
