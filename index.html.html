@@ -151,6 +151,11 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 
 .top10-badge { position: absolute; right: 2.5rem; top: 7rem; z-index: 10; background: var(--accent); color: #fff; width: 36px; padding: 6px 0; border-radius: 4px; text-align: center; font-weight: 800; font-size: 0.7rem; line-height: 1.1; box-shadow: 0 4px 14px var(--aglow); }
 
+/* Hero carousel dot indicators */
+.hero-dots { position: relative; z-index: 10; display: flex; gap: 8px; margin-top: 0.4rem; margin-bottom: 1.4rem; }
+.hero-dot { width: 22px; height: 4px; border-radius: 3px; background: rgba(255,255,255,0.25); cursor: pointer; transition: background 0.25s, width 0.25s; }
+.hero-dot.active { background: var(--accent); width: 34px; }
+
 /* ============================================================
    GRID CONTENT & CATEGORIES
 ============================================================ */
@@ -307,6 +312,8 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
                 <button class="btn-trailer" id="heroTrailerBtn" style="display:none;"><i class="fa-brands fa-youtube"></i> Trailer</button>
                 <button class="btn-wishlist" id="heroWishlistBtn"><i class="fa-solid fa-plus"></i> My Wishlist</button>
             </div>
+
+            <div class="hero-dots" id="heroDots"></div>
         </div>
 
         <div class="hero-episodes-card" id="heroEpisodesCard">
@@ -321,11 +328,18 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
             <div class="category-item active" onclick="fetchCategory('trending', this)">Trending</div>
             <div class="category-item" onclick="fetchCategory('now-playing', this)">Now Playing</div>
             <div class="category-item" onclick="fetchCategory('top-rated', this)">Top Rated</div>
-            <!-- Dynamic genre chips populate here -->
+            <div class="category-item" onclick="fetchAnime(this)">Anime</div>
+            <div class="category-item" onclick="fetchAnimation(this)">Animation</div>
+            <div class="category-item" id="moreGenresToggle" onclick="toggleGenreRow()">Genres <i class="fa-solid fa-chevron-down" style="font-size:0.65rem; margin-left:2px;"></i></div>
+        </div>
+        <div class="categories-nav" id="genreRow" style="display:none; flex-wrap:wrap; overflow:visible;">
+            <!-- Dynamic genre chips populate here, grouped by current context (movie/tv) -->
         </div>
 
         <h2 class="section-heading" id="gridHeading" style="display:none;"></h2>
         <div class="movies-grid" id="moviesGrid"></div>
+        <div id="gridLoader" style="display:none; text-align:center; padding:2rem; color:var(--muted);"><i class="fa-solid fa-spinner fa-spin"></i> Loading more...</div>
+        <div id="gridEndMsg" style="display:none; text-align:center; padding:1.5rem; color:var(--muted); font-size:0.85rem;">You've reached the end.</div>
     </main>
 
     <!-- Details Overlay Modal -->
@@ -344,7 +358,7 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
                 <div class="stream-close-btn" onclick="closeStream()"><i class="fa-solid fa-xmark"></i></div>
             </div>
             <div class="stream-video-area">
-                <iframe class="stream-iframe" id="streamIframe" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+                <iframe class="stream-iframe" id="streamIframe" allowfullscreen allow="autoplay; encrypted-media" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"></iframe>
             </div>
         </div>
     </div>
@@ -358,11 +372,6 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
 <script>
 /* ============================================================
    API CONFIGURATION & ENGINE
-   Calls TMDB directly from the client. Note: this puts the key
-   in plain view in your page source (anyone can read it via
-   dev tools / view-source). Fine for a personal/free-tier key;
-   swap back to the /api/* backend proxy if this ever needs to
-   be hidden (e.g. a paid or rate-sensitive key).
 ============================================================ */
 const TMDB_API_KEY = '33ef7aaa3002731060f718f25dd995ac';
 const TMDB_BASE = 'https://api.themoviedb.org/3';
@@ -370,7 +379,6 @@ const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 const HERO_IMAGE_BASE = 'https://image.tmdb.org/t/p/original';
 const PROVIDER_LOGO_BASE = 'https://image.tmdb.org/t/p/w92';
 
-// Tiny helper that mimics the old /api/* proxy's call shape, but hits TMDB directly
 function tmdb(path, params = {}) {
     const url = new URL(`${TMDB_BASE}${path}`);
     url.searchParams.set('api_key', TMDB_API_KEY);
@@ -380,7 +388,6 @@ function tmdb(path, params = {}) {
     return fetch(url.toString());
 }
 
-// Static fallback so labels still render before the dynamic genre fetch resolves
 let GENRES = {
     28: "Action", 12: "Adventure", 16: "Animation", 35: "Comedy", 80: "Crime",
     99: "Documentary", 18: "Drama", 10751: "Family", 14: "Fantasy", 36: "History",
@@ -391,12 +398,35 @@ let GENRES = {
 };
 
 let currentHeroItem = null;
-let currentContext = 'movie'; // 'movie' | 'tv' — drives which genre set is shown
+let currentContext = 'movie';
 const WISHLIST_KEY = 'youflex_wishlist';
+
+/* ============================================================
+   POPUP / NEW-TAB BLOCKER
+   Embed players frequently try to spawn ad popups via window.open
+   or by injecting target="_blank" links. Neutralize both. The
+   iframe sandbox above (no allow-popups / allow-top-navigation)
+   is the primary defense since it applies to the embed's own
+   origin; this guard covers anything running in the parent page.
+============================================================ */
+(function blockPopups() {
+    const nativeOpen = window.open;
+    window.open = function () {
+        console.warn('Blocked a popup window request.');
+        return null;
+    };
+    document.addEventListener('click', (e) => {
+        const anchor = e.target.closest && e.target.closest('a[target="_blank"]');
+        if (anchor && !anchor.dataset.allowPopup) {
+            e.preventDefault();
+        }
+    }, true);
+})();
 
 window.addEventListener('load', () => {
     initApp();
     window.addEventListener('scroll', handleHeaderScroll);
+    window.addEventListener('scroll', maybeLoadMoreGrid);
     window.addEventListener('online', updateNetworkStatus);
     window.addEventListener('offline', updateNetworkStatus);
 });
@@ -409,11 +439,12 @@ function initApp() {
     setupSearchEngine();
     setupThemeToggle();
     id('surpriseBtn').addEventListener('click', surpriseMe);
+
+    const hero = id('heroSection');
+    hero.addEventListener('mouseenter', () => { if (heroTimer) clearInterval(heroTimer); });
+    hero.addEventListener('mouseleave', startHeroRotation);
 }
 
-/* ============================================================
-   GENRES — fetched dynamically, used for labels + filter chips
-============================================================ */
 async function loadAllGenres() {
     try {
         const [movieGenres, tvGenres] = await Promise.all([
@@ -429,9 +460,8 @@ async function loadAllGenres() {
 }
 
 async function loadGenreChips(type) {
-    const nav = id('categoryNav');
-    // remove any previously injected dynamic chips
-    nav.querySelectorAll('.genre-chip').forEach(el => el.remove());
+    const row = id('genreRow');
+    row.innerHTML = '';
     try {
         const res = await tmdb(`/genre/${type}/list`);
         const data = await res.json();
@@ -440,11 +470,39 @@ async function loadGenreChips(type) {
             chip.className = 'category-item genre-chip';
             chip.textContent = g.name;
             chip.onclick = () => fetchByGenre(g.id, type, chip);
-            nav.appendChild(chip);
+            row.appendChild(chip);
         });
     } catch (e) {
         console.error('Error loading genre chips:', e);
     }
+}
+
+function toggleGenreRow() {
+    const row = id('genreRow');
+    const toggle = id('moreGenresToggle');
+    const isOpen = row.style.display !== 'none';
+    row.style.display = isOpen ? 'none' : 'flex';
+    toggle.innerHTML = isOpen
+        ? 'Genres <i class="fa-solid fa-chevron-down" style="font-size:0.65rem; margin-left:2px;"></i>'
+        : 'Genres <i class="fa-solid fa-chevron-up" style="font-size:0.65rem; margin-left:2px;"></i>';
+}
+
+/* Curated Anime / Animation shortcuts (both discoverable via genre chips too,
+   but surfaced up top since they're commonly-requested categories) */
+function fetchAnime(element) {
+    document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
+    if (element) element.classList.add('active');
+    id('gridHeading').style.display = 'flex';
+    id('gridHeading').innerHTML = '<i class="fa-solid fa-dragon" style="color:var(--accent);"></i> Anime';
+    startGridQuery('/discover/tv', { with_genres: 16, with_original_language: 'ja', sort_by: 'popularity.desc' }, 'tv');
+}
+
+function fetchAnimation(element) {
+    document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
+    if (element) element.classList.add('active');
+    id('gridHeading').style.display = 'flex';
+    id('gridHeading').innerHTML = '<i class="fa-solid fa-film" style="color:var(--accent);"></i> Animation';
+    startGridQuery('/discover/movie', { with_genres: 16, sort_by: 'popularity.desc' }, 'movie');
 }
 
 function setContext(type, element) {
@@ -465,20 +523,59 @@ function goHome(element) {
     fetchCategory('trending');
 }
 
-/* ============================================================
-   HERO BANNER
-============================================================ */
+let heroItems = [];
+let heroIndex = 0;
+let heroTimer = null;
+const HERO_ROTATE_MS = 8000;
+const HERO_SLIDE_COUNT = 5;
+
 async function fetchHeroBanner() {
     try {
         const res = await tmdb('/trending/all/day');
         const data = await res.json();
-        if (data.results && data.results.length > 0) {
-            currentHeroItem = data.results[0];
+        heroItems = (data.results || [])
+            .filter(r => r.media_type !== 'person' && r.backdrop_path)
+            .slice(0, HERO_SLIDE_COUNT);
+
+        if (heroItems.length > 0) {
+            currentHeroItem = heroItems[0];
+            renderHeroDots();
             renderHero(currentHeroItem);
+            startHeroRotation();
         }
     } catch (e) {
         console.error("Error loading hero item:", e);
     }
+}
+
+function renderHeroDots() {
+    const dotsEl = id('heroDots');
+    dotsEl.innerHTML = '';
+    heroItems.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'hero-dot' + (i === heroIndex ? ' active' : '');
+        dot.onclick = () => goToHeroSlide(i);
+        dotsEl.appendChild(dot);
+    });
+}
+
+function goToHeroSlide(i) {
+    heroIndex = i;
+    currentHeroItem = heroItems[heroIndex];
+    renderHero(currentHeroItem);
+    document.querySelectorAll('.hero-dot').forEach((d, idx) => d.classList.toggle('active', idx === heroIndex));
+    startHeroRotation(); // reset timer on manual interaction
+}
+
+function startHeroRotation() {
+    if (heroTimer) clearInterval(heroTimer);
+    if (heroItems.length <= 1) return;
+    heroTimer = setInterval(() => {
+        heroIndex = (heroIndex + 1) % heroItems.length;
+        currentHeroItem = heroItems[heroIndex];
+        renderHero(currentHeroItem);
+        document.querySelectorAll('.hero-dot').forEach((d, idx) => d.classList.toggle('active', idx === heroIndex));
+    }, HERO_ROTATE_MS);
 }
 
 async function renderHero(item) {
@@ -518,7 +615,6 @@ async function renderHero(item) {
         id('heroEpisodesCard').style.display = 'none';
     }
 
-    // Trailer button — details endpoint already appends videos
     id('heroTrailerBtn').style.display = 'none';
     try {
         const details = await tmdb(`/${type}/${item.id}`, { append_to_response: 'videos,images' }).then(r => r.json());
@@ -592,8 +688,59 @@ async function fetchEpisodes(tvId) {
 }
 
 /* ============================================================
-   GRID CONTENT RETRIEVAL
+   INFINITE SCROLL ENGINE
+   gridState tracks the active TMDB query so we can keep pulling
+   subsequent pages as the user scrolls, instead of a fixed page.
 ============================================================ */
+const gridState = { path: null, params: {}, page: 1, forcedType: null, loading: false, done: false };
+
+function startGridQuery(path, params, forcedType) {
+    gridState.path = path;
+    gridState.params = params || {};
+    gridState.page = 1;
+    gridState.forcedType = forcedType || null;
+    gridState.loading = false;
+    gridState.done = false;
+    id('gridEndMsg').style.display = 'none';
+    loadGridPage(false);
+}
+
+async function loadGridPage(append) {
+    if (!gridState.path || gridState.loading || gridState.done) return;
+    gridState.loading = true;
+    id('gridLoader').style.display = append ? 'block' : 'none';
+
+    try {
+        const res = await tmdb(gridState.path, { ...gridState.params, page: gridState.page });
+        const data = await res.json();
+        const results = data.results || [];
+
+        renderGrid(results, append, gridState.forcedType);
+
+        const totalPages = data.total_pages || 1;
+        if (gridState.page >= totalPages || results.length === 0) {
+            gridState.done = true;
+            if (append) id('gridEndMsg').style.display = 'block';
+        } else {
+            gridState.page += 1;
+        }
+    } catch (e) {
+        console.error('Error loading grid items:', e);
+    } finally {
+        gridState.loading = false;
+        id('gridLoader').style.display = 'none';
+    }
+}
+
+function maybeLoadMoreGrid() {
+    if (!gridState.path || gridState.loading || gridState.done) return;
+    const scrollBottom = window.innerHeight + window.scrollY;
+    const pageHeight = document.documentElement.scrollHeight;
+    if (scrollBottom >= pageHeight - 600) {
+        loadGridPage(true);
+    }
+}
+
 async function fetchCategory(category, element) {
     if (element) {
         document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
@@ -603,33 +750,21 @@ async function fetchCategory(category, element) {
 
     let path = '/trending/all/week';
     let params = {};
-    if (category === 'tv') path = '/discover/tv';
-    if (category === 'movie') path = '/discover/movie';
-    if (category === 'upcoming') path = '/movie/upcoming';
-    if (category === 'now-playing') path = '/movie/now_playing';
-    if (category === 'top-rated') path = `/${currentContext}/top_rated`;
+    let forcedType = null;
+    if (category === 'tv') { path = '/discover/tv'; forcedType = 'tv'; }
+    if (category === 'movie') { path = '/discover/movie'; forcedType = 'movie'; }
+    if (category === 'upcoming') { path = '/movie/upcoming'; forcedType = 'movie'; }
+    if (category === 'now-playing') { path = '/movie/now_playing'; forcedType = 'movie'; }
+    if (category === 'top-rated') { path = `/${currentContext}/top_rated`; forcedType = currentContext; }
 
-    try {
-        const res = await tmdb(path, params);
-        const data = await res.json();
-        renderGrid(data.results || []);
-    } catch (e) {
-        console.error("Error loading grid items:", e);
-    }
+    startGridQuery(path, params, forcedType);
 }
 
-async function fetchByGenre(genreId, type, element) {
+function fetchByGenre(genreId, type, element) {
     document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
     if (element) element.classList.add('active');
     id('gridHeading').style.display = 'none';
-
-    try {
-        const res = await tmdb(`/discover/${type}`, { with_genres: genreId });
-        const data = await res.json();
-        renderGrid(data.results || []);
-    } catch (e) {
-        console.error("Error loading genre grid:", e);
-    }
+    startGridQuery(`/discover/${type}`, { with_genres: genreId }, type);
 }
 
 async function surpriseMe() {
@@ -645,21 +780,21 @@ async function surpriseMe() {
     }
 }
 
-function renderGrid(items) {
+function renderGrid(items, append, forcedType) {
     const grid = id('moviesGrid');
-    grid.innerHTML = '';
+    if (!append) grid.innerHTML = '';
 
-    if (!items.length) {
+    if (!append && !items.length) {
         grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><i class="fa-solid fa-clapperboard"></i><p>Nothing here yet.</p></div>`;
         return;
     }
 
     items.forEach(item => {
-        if (item.media_type === 'person') return; // skip people in mixed trending results
+        if (item.media_type === 'person') return;
         const title = item.title || item.name;
         const poster = item.poster_path ? `${IMAGE_BASE}${item.poster_path}` : 'https://via.placeholder.com/300x450';
         const rating = item.vote_average ? item.vote_average.toFixed(1) : 'N/A';
-        const type = item.media_type || (item.title ? 'movie' : 'tv');
+        const type = forcedType || item.media_type || (item.title ? 'movie' : 'tv');
         const inList = isInWishlist(item.id, type);
 
         const card = document.createElement('div');
@@ -686,9 +821,6 @@ function renderGrid(items) {
     });
 }
 
-/* ============================================================
-   WISHLIST ("My List") — persisted in localStorage
-============================================================ */
 function getWishlist() {
     try { return JSON.parse(localStorage.getItem(WISHLIST_KEY)) || []; }
     catch (e) { return []; }
@@ -725,12 +857,14 @@ function showWishlist(element) {
     heading.style.display = 'flex';
     heading.innerHTML = '<i class="fa-solid fa-heart" style="color:var(--accent);"></i> My List';
 
+    // Static list — no further pages to paginate through
+    gridState.path = null;
+    gridState.done = true;
+    id('gridEndMsg').style.display = 'none';
+
     renderGrid(getWishlist());
 }
 
-/* ============================================================
-   SEARCH AUTOCOMPLETE
-============================================================ */
 function setupSearchEngine() {
     const input = id('searchInput');
     const dropdown = id('autocompleteDropdown');
@@ -773,9 +907,6 @@ function setupSearchEngine() {
     });
 }
 
-/* ============================================================
-   MODALS & VIDEO PLAYER INTERFACE
-============================================================ */
 async function openDetailsModal(mediaId, type) {
     const modal = id('detailsModal');
     const modalBody = id('modalBody');
@@ -834,7 +965,6 @@ async function loadModalProviders(mediaId, type) {
     const container = id('modalProviders');
     try {
         const data = await tmdb(`/${type}/${mediaId}/watch/providers`).then(r => r.json());
-        // Try to find a region with data; prefer US, else first available
         const regions = data.results || {};
         const region = regions.US || Object.values(regions)[0];
         const providers = region ? [...(region.flatrate || []), ...(region.rent || []), ...(region.buy || [])] : [];
@@ -904,7 +1034,6 @@ function closeStream() {
     streamModal.classList.remove('show');
 }
 
-/* UTILITY HELPERS */
 function handleHeaderScroll() {
     const header = id('mainHeader');
     if (window.scrollY > 50) {
@@ -934,6 +1063,24 @@ function updateNetworkStatus() {
     else banner.classList.remove('show');
 }
 function checkNetworkConnection() { updateNetworkStatus(); }
+
+/* ============================================================
+   BASIC ACCESS DETERRENTS
+   Note: none of this can truly prevent someone from reading page
+   source or opening devtools — the browser always has the raw
+   HTML/JS available to the user. This only removes the obvious
+   shortcuts (right-click menu, Ctrl+U, Ctrl+Shift+I/J/C, F12) so
+   casual attempts are discouraged.
+============================================================ */
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+document.addEventListener('keydown', (e) => {
+    const k = e.key.toUpperCase();
+    const blockCombo =
+        k === 'F12' ||
+        (e.ctrlKey && k === 'U') ||
+        (e.ctrlKey && e.shiftKey && (k === 'I' || k === 'J' || k === 'C'));
+    if (blockCombo) e.preventDefault();
+});
 
 function id(elementId) { return document.getElementById(elementId); }
 </script>
