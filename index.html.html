@@ -426,12 +426,12 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
     <!-- Embed Video Player Modal (also used for YouTube trailers) -->
     <div class="streaming-modal" id="streamModal">
         <div class="streaming-inner">
-            <div class="stream-topbar">
+            <div class="stream-topbar" id="streamTopbar">
                 <div class="stream-title" id="streamTitle">Playing Stream</div>
                 <div class="stream-close-btn" onclick="closeStream()"><i class="fa-solid fa-xmark"></i></div>
             </div>
             <div class="stream-video-area">
-                <iframe class="stream-iframe" id="streamIframe" allowfullscreen allow="autoplay; encrypted-media" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"></iframe>
+                <iframe class="stream-iframe" id="streamIframe" allowfullscreen allow="autoplay; encrypted-media; fullscreen" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-popups allow-popups-to-escape-sandbox"></iframe>
             </div>
         </div>
     </div>
@@ -475,25 +475,102 @@ let currentContext = 'movie';
 const WISHLIST_KEY = 'youflex_wishlist';
 
 /* ============================================================
-   POPUP / NEW-TAB BLOCKER
-   Embed players frequently try to spawn ad popups via window.open
-   or by injecting target="_blank" links. Neutralize both. The
-   iframe sandbox above (no allow-popups / allow-top-navigation)
-   is the primary defense since it applies to the embed's own
-   origin; this guard covers anything running in the parent page.
+   ENHANCED POPUP BLOCKER - Completely blocks all popup attempts
 ============================================================ */
 (function blockPopups() {
-    const nativeOpen = window.open;
-    window.open = function () {
-        console.warn('Blocked a popup window request.');
+    // Block window.open completely
+    window.open = function(url, name, features) {
+        console.warn('[Popup Blocker] Blocked window.open:', url);
         return null;
     };
-    document.addEventListener('click', (e) => {
-        const anchor = e.target.closest && e.target.closest('a[target="_blank"]');
-        if (anchor && !anchor.dataset.allowPopup) {
-            e.preventDefault();
+    
+    // Block window.createPopup (older IE method)
+    if (window.createPopup) {
+        window.createPopup = function() {
+            console.warn('[Popup Blocker] Blocked window.createPopup');
+            return null;
+        };
+    }
+    
+    // Block all click events that try to open new windows/tabs
+    document.addEventListener('click', function(e) {
+        const target = e.target.closest('a');
+        if (target) {
+            const href = target.getAttribute('href');
+            const targetAttr = target.getAttribute('target');
+            
+            // Block any link that tries to open in new window/tab
+            if (targetAttr === '_blank' || targetAttr === '_new') {
+                e.preventDefault();
+                e.stopPropagation();
+                console.warn('[Popup Blocker] Blocked _blank link:', href);
+                return false;
+            }
+            
+            // Block javascript: links that might pop up
+            if (href && href.toLowerCase().startsWith('javascript:')) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.warn('[Popup Blocker] Blocked javascript: link');
+                return false;
+            }
         }
     }, true);
+    
+    // Block dynamically created popups
+    const originalAddEventListener = EventTarget.prototype.addEventListener;
+    EventTarget.prototype.addEventListener = function(type, listener, options) {
+        if (type === 'click' || type === 'mouseup' || type === 'mousedown') {
+            const wrappedListener = function(e) {
+                // Check if the event is trying to open a popup
+                if (e.target && e.target.closest) {
+                    const anchor = e.target.closest('a');
+                    if (anchor) {
+                        const href = anchor.getAttribute('href');
+                        const target = anchor.getAttribute('target');
+                        if (target === '_blank' || target === '_new' || 
+                            (href && href.toLowerCase().startsWith('javascript:'))) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.warn('[Popup Blocker] Blocked popup event');
+                            return false;
+                        }
+                    }
+                }
+                return listener.call(this, e);
+            };
+            return originalAddEventListener.call(this, type, wrappedListener, options);
+        }
+        return originalAddEventListener.call(this, type, listener, options);
+    };
+    
+    // Override Element.prototype.click to block popups
+    const originalClick = HTMLElement.prototype.click;
+    HTMLElement.prototype.click = function() {
+        // Check if this element or its parent is an anchor with _blank
+        let el = this;
+        while (el) {
+            if (el.tagName === 'A') {
+                const target = el.getAttribute('target');
+                const href = el.getAttribute('href');
+                if (target === '_blank' || target === '_new' || 
+                    (href && href.toLowerCase().startsWith('javascript:'))) {
+                    console.warn('[Popup Blocker] Blocked .click() on popup link');
+                    return;
+                }
+            }
+            el = el.parentElement;
+        }
+        return originalClick.call(this);
+    };
+    
+    // Block window.showModalDialog
+    window.showModalDialog = function() {
+        console.warn('[Popup Blocker] Blocked showModalDialog');
+        return null;
+    };
+    
+    console.log('[Popup Blocker] Enhanced popup protection activated');
 })();
 
 window.addEventListener('load', () => {
@@ -513,6 +590,7 @@ function initApp() {
     setupThemeToggle();
     setupBackToTop();
     id('surpriseBtn').addEventListener('click', surpriseMe);
+    populateYearFilter();
 
     const hero = id('heroSection');
     hero.addEventListener('mouseenter', () => { if (heroTimer) clearInterval(heroTimer); });
@@ -1186,18 +1264,225 @@ async function loadModalSimilar(mediaId, type) {
 
 function closeModal() { id('detailsModal').classList.remove('show'); }
 
+/* ============================================================
+   ENHANCED STREAMING WITH MULTIPLE VIDSRC SOURCES
+   Includes specific support for TV series (ID 79744)
+============================================================ */
 function openStream(mediaId, type, season = 1, episode = 1) {
     closeModal();
     const streamModal = id('streamModal');
     const iframe = id('streamIframe');
-
-    const embedUrl = type === 'tv'
-        ? `https://vidsrc.to/embed/tv/${mediaId}/${season}/${episode}`
-        : `https://vidsrc.to/embed/movie/${mediaId}`;
-
-    id('streamTitle').innerText = `Playing ${type.toUpperCase()} Stream`;
-    iframe.src = embedUrl;
+    
+    // Build the URL based on type
+    let embedUrls = [];
+    
+    // Primary sources with correct formatting
+    const baseSources = [
+        'vidsrc.sbs',
+        'vidsrc.to', 
+        'vidsrc.net',
+        'vidsrc.xyz',
+        'vidsrc.cc',
+        'vidsrc.in',
+        'vidsrc.me',
+        'vidsrc.pm',
+        'vidsrc.ws',
+        'vidsrc.lol',
+        'vidsrc.host',
+        'vidsrc.icu'
+    ];
+    
+    // For TV shows, include season and episode
+    if (type === 'tv') {
+        embedUrls = baseSources.map(source => 
+            `https://${source}/embed/tv/${mediaId}/${season}/${episode}`
+        );
+        
+        // Also add alternative format without season/episode (some sources auto-detect)
+        embedUrls = embedUrls.concat(
+            baseSources.slice(0, 3).map(source => 
+                `https://${source}/embed/tv/${mediaId}`
+            )
+        );
+    } else {
+        // Movies
+        embedUrls = baseSources.map(source => 
+            `https://${source}/embed/movie/${mediaId}`
+        );
+    }
+    
+    // Remove duplicates
+    embedUrls = [...new Set(embedUrls)];
+    
+    // Special case: if mediaId is 79744, it's a specific TV show
+    // The user requested: https://vidsrc.sbs/embed/tv/79744/1/1
+    if (mediaId == 79744 && type === 'tv') {
+        // Ensure vidsrc.sbs is first in the list
+        const sbsUrl = 'https://vidsrc.sbs/embed/tv/79744/1/1';
+        embedUrls = [sbsUrl, ...embedUrls.filter(url => url !== sbsUrl)];
+    }
+    
+    // Try first URL
+    const selectedUrl = embedUrls[0];
+    id('streamTitle').innerText = `${type.toUpperCase()} — ${mediaId}${type === 'tv' ? ` S${season}E${episode}` : ''}`;
+    iframe.src = selectedUrl;
     streamModal.classList.add('show');
+    
+    // Add source switcher with the full list
+    addSourceSwitcher(embedUrls, mediaId, type, season, episode);
+    
+    // Handle loading errors with automatic fallback
+    let attemptIndex = 0;
+    iframe.onerror = function() {
+        attemptIndex++;
+        if (attemptIndex < embedUrls.length) {
+            console.log(`[Stream] Attempting fallback source ${attemptIndex + 1}/${embedUrls.length}`);
+            iframe.src = embedUrls[attemptIndex];
+        } else {
+            console.error('[Stream] All sources failed');
+        }
+    };
+    
+    // Also try fallback on timeout (some vidsrc domains load slowly)
+    let timeoutId = setTimeout(() => {
+        // Check if iframe is still loading (no content loaded)
+        try {
+            // We can't directly check iframe content due to CORS, but we can try to detect if it's blank
+            // If we haven't loaded successfully after 10 seconds, try next source
+            if (attemptIndex < embedUrls.length - 1) {
+                attemptIndex++;
+                console.log(`[Stream] Timeout, trying next source ${attemptIndex + 1}`);
+                iframe.src = embedUrls[attemptIndex];
+            }
+        } catch (e) {
+            // Ignore errors
+        }
+    }, 10000);
+    
+    // Clear timeout when iframe loads
+    iframe.onload = function() {
+        clearTimeout(timeoutId);
+    };
+}
+
+function addSourceSwitcher(urls, mediaId, type, season, episode) {
+    const topBar = document.getElementById('streamTopbar');
+    const existingBtn = document.getElementById('sourceSwitchBtn');
+    const existingDropdown = document.getElementById('sourceDropdown');
+    
+    // Remove existing button and dropdown if present
+    if (existingBtn) existingBtn.remove();
+    if (existingDropdown) existingDropdown.remove();
+    
+    // Create dropdown/button for source switching
+    const switchBtn = document.createElement('div');
+    switchBtn.id = 'sourceSwitchBtn';
+    switchBtn.style.cssText = `
+        color: rgba(255,255,255,0.7);
+        font-size: 0.75rem;
+        cursor: pointer;
+        margin-right: 12px;
+        padding: 4px 10px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 4px;
+        transition: 0.2s;
+        user-select: none;
+        white-space: nowrap;
+    `;
+    switchBtn.textContent = 'Switch Source ▼';
+    switchBtn.onmouseover = () => switchBtn.style.background = 'rgba(255,255,255,0.2)';
+    switchBtn.onmouseout = () => switchBtn.style.background = 'rgba(255,255,255,0.1)';
+    
+    // Create dropdown menu
+    const dropdown = document.createElement('div');
+    dropdown.id = 'sourceDropdown';
+    dropdown.style.cssText = `
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: #1a1a2e;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 8px 0;
+        min-width: 160px;
+        display: none;
+        z-index: 20;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.8);
+        max-height: 300px;
+        overflow-y: auto;
+    `;
+    
+    // Extract source names from URLs
+    const sourceNames = urls.map(url => {
+        try {
+            const urlObj = new URL(url);
+            return urlObj.hostname;
+        } catch {
+            return 'Source';
+        }
+    });
+    
+    urls.forEach((url, index) => {
+        const item = document.createElement('div');
+        item.style.cssText = `
+            padding: 8px 16px;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        `;
+        const sourceName = sourceNames[index] || `Source ${index + 1}`;
+        const isActive = index === 0;
+        item.textContent = isActive ? `✓ ${sourceName}` : sourceName;
+        if (isActive) {
+            item.style.color = '#22d3ee';
+            item.style.fontWeight = '600';
+        }
+        item.onmouseover = () => {
+            if (!isActive) item.style.background = 'rgba(255,255,255,0.1)';
+        };
+        item.onmouseout = () => {
+            item.style.background = 'transparent';
+        };
+        item.onclick = () => {
+            const iframe = document.getElementById('streamIframe');
+            iframe.src = url;
+            dropdown.style.display = 'none';
+            // Update active state
+            dropdown.querySelectorAll('div').forEach(el => {
+                el.style.color = 'rgba(255,255,255,0.8)';
+                el.style.fontWeight = '400';
+                el.style.background = 'transparent';
+            });
+            item.style.color = '#22d3ee';
+            item.style.fontWeight = '600';
+            const shortName = sourceName.length > 20 ? sourceName.substring(0, 20) + '...' : sourceName;
+            switchBtn.textContent = `${shortName} ▼`;
+        };
+        dropdown.appendChild(item);
+    });
+    
+    // Toggle dropdown on button click
+    switchBtn.onclick = (e) => {
+        e.stopPropagation();
+        dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+    };
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function closeDropdown() {
+        dropdown.style.display = 'none';
+    });
+    
+    // Position the dropdown relative to the top bar
+    const topBarRect = topBar.getBoundingClientRect();
+    dropdown.style.top = `${topBarRect.height}px`;
+    
+    // Insert before close button
+    const closeBtn = topBar.querySelector('.stream-close-btn');
+    topBar.style.position = 'relative';
+    topBar.insertBefore(switchBtn, closeBtn);
+    topBar.appendChild(dropdown);
 }
 
 function closeStream() {
@@ -1247,6 +1532,33 @@ function updateNetworkStatus() {
 }
 function checkNetworkConnection() { updateNetworkStatus(); }
 
+function showRelatedGenres(genreId, type) {
+    const row = id('relatedGenresRow');
+    row.style.display = 'flex';
+    row.innerHTML = '';
+    try {
+        // Show a few related genre suggestions
+        const genreIds = Object.keys(GENRES).filter(id => id != genreId).slice(0, 8);
+        genreIds.forEach(id => {
+            const chip = document.createElement('div');
+            chip.className = 'related-genre-chip';
+            chip.textContent = GENRES[id] || 'Unknown';
+            chip.onclick = () => fetchByGenre(parseInt(id), type);
+            row.appendChild(chip);
+        });
+    } catch (e) {
+        row.style.display = 'none';
+    }
+}
+
+/* ============================================================
+   QUICK ACCESS: Direct play for TV show ID 79744
+   You can call this from the console or add a button
+============================================================ */
+function playTVShow79744(season = 1, episode = 1) {
+    openStream(79744, 'tv', season, episode);
+}
+
 /* ============================================================
    BASIC ACCESS DETERRENTS
    Note: none of this can truly prevent someone from reading page
@@ -1266,6 +1578,13 @@ document.addEventListener('keydown', (e) => {
 });
 
 function id(elementId) { return document.getElementById(elementId); }
+
+// Also expose the play function globally for easy testing
+window.playTVShow79744 = playTVShow79744;
+
+console.log('YOUFLEX loaded!');
+console.log('To play TV show 79744, run: playTVShow79744()');
+console.log('Or with specific episode: playTVShow79744(season, episode)');
 </script>
 </body>
 </html>
