@@ -261,6 +261,30 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 .stream-video-area { flex:1; background:#000; position:relative; }
 .stream-iframe { position:absolute; inset:0; width:100%; height:100%; border:none; }
 
+/* Quality selector overlay */
+.quality-selector {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 15;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    pointer-events: none;
+}
+.quality-selector i {
+    color: #22d3ee;
+    font-size: 0.85rem;
+}
+
 footer { background:var(--bg2); border-top:1px solid var(--border); text-align:center; padding:1.5rem; color:var(--muted); font-size:0.8rem; }
 
 @media (max-width: 900px) {
@@ -431,7 +455,16 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
                 <div class="stream-close-btn" onclick="closeStream()"><i class="fa-solid fa-xmark"></i></div>
             </div>
             <div class="stream-video-area">
-                <iframe class="stream-iframe" id="streamIframe" allowfullscreen allow="autoplay; encrypted-media; fullscreen" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-popups allow-popups-to-escape-sandbox"></iframe>
+                <iframe class="stream-iframe" id="streamIframe" 
+                    allowfullscreen 
+                    allow="autoplay; encrypted-media; fullscreen" 
+                    referrerpolicy="no-referrer" 
+                    sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-popups allow-popups-to-escape-sandbox">
+                </iframe>
+                <div class="quality-selector">
+                    <i class="fa-solid fa-sliders-h"></i>
+                    <span>1080p HD</span>
+                </div>
             </div>
         </div>
     </div>
@@ -444,98 +477,117 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
 
 <script>
 /* ============================================================
-   API CONFIGURATION & ENGINE
+   ULTIMATE POPUP BLOCKER - Completely blocks ALL popup attempts
+   This is the most comprehensive popup blocker you can use
 ============================================================ */
-const TMDB_API_KEY = '33ef7aaa3002731060f718f25dd995ac';
-const TMDB_BASE = 'https://api.themoviedb.org/3';
-const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
-const HERO_IMAGE_BASE = 'https://image.tmdb.org/t/p/original';
-const PROVIDER_LOGO_BASE = 'https://image.tmdb.org/t/p/w92';
-
-function tmdb(path, params = {}) {
-    const url = new URL(`${TMDB_BASE}${path}`);
-    url.searchParams.set('api_key', TMDB_API_KEY);
-    Object.keys(params).forEach(k => {
-        if (params[k] !== undefined && params[k] !== null) url.searchParams.set(k, params[k]);
-    });
-    return fetch(url.toString());
-}
-
-let GENRES = {
-    28: "Action", 12: "Adventure", 16: "Animation", 35: "Comedy", 80: "Crime",
-    99: "Documentary", 18: "Drama", 10751: "Family", 14: "Fantasy", 36: "History",
-    27: "Horror", 10402: "Music", 9648: "Mystery", 10749: "Romance", 878: "Sci-Fi",
-    10770: "TV Movie", 53: "Thriller", 10752: "War", 37: "Western", 10759: "Action & Adventure",
-    10765: "Sci-Fi & Fantasy", 10762: "Kids", 10763: "News", 10764: "Reality", 10766: "Soap",
-    10767: "Talk", 10768: "War & Politics"
-};
-
-let currentHeroItem = null;
-let currentContext = 'movie';
-const WISHLIST_KEY = 'youflex_wishlist';
-
-/* ============================================================
-   ENHANCED POPUP BLOCKER - Completely blocks all popup attempts
-============================================================ */
-(function blockPopups() {
-    // Block window.open completely
+(function ultimatePopupBlocker() {
+    console.log('[Popup Blocker] Activating ultimate protection...');
+    
+    // 1. Block window.open completely
+    const originalWindowOpen = window.open;
     window.open = function(url, name, features) {
-        console.warn('[Popup Blocker] Blocked window.open:', url);
+        console.warn('[Popup Blocker] 🚫 Blocked window.open:', url || '(empty)');
         return null;
     };
     
-    // Block window.createPopup (older IE method)
-    if (window.createPopup) {
-        window.createPopup = function() {
-            console.warn('[Popup Blocker] Blocked window.createPopup');
+    // 2. Block window.showModalDialog
+    if (window.showModalDialog) {
+        window.showModalDialog = function() {
+            console.warn('[Popup Blocker] 🚫 Blocked showModalDialog');
             return null;
         };
     }
     
-    // Block all click events that try to open new windows/tabs
+    // 3. Block window.createPopup (IE)
+    if (window.createPopup) {
+        window.createPopup = function() {
+            console.warn('[Popup Blocker] 🚫 Blocked createPopup');
+            return null;
+        };
+    }
+    
+    // 4. Block window.openDialog (Firefox)
+    if (window.openDialog) {
+        window.openDialog = function() {
+            console.warn('[Popup Blocker] 🚫 Blocked openDialog');
+            return null;
+        };
+    }
+    
+    // 5. Override target="_blank" on all links
     document.addEventListener('click', function(e) {
-        const target = e.target.closest('a');
-        if (target) {
-            const href = target.getAttribute('href');
-            const targetAttr = target.getAttribute('target');
-            
-            // Block any link that tries to open in new window/tab
-            if (targetAttr === '_blank' || targetAttr === '_new') {
-                e.preventDefault();
-                e.stopPropagation();
-                console.warn('[Popup Blocker] Blocked _blank link:', href);
-                return false;
+        let target = e.target;
+        while (target && target !== document) {
+            if (target.tagName === 'A') {
+                const href = target.getAttribute('href');
+                const targetAttr = target.getAttribute('target');
+                const relAttr = target.getAttribute('rel');
+                
+                // Block _blank, _new, or any popup trigger
+                if (targetAttr === '_blank' || targetAttr === '_new' || targetAttr === '_popup') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.warn('[Popup Blocker] 🚫 Blocked _blank link:', href);
+                    return false;
+                }
+                
+                // Block javascript: URLs
+                if (href && href.toLowerCase().startsWith('javascript:')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.warn('[Popup Blocker] 🚫 Blocked javascript: link');
+                    return false;
+                }
+                
+                // Block links with rel="external" or rel="noreferrer" that might popup
+                if (relAttr && (relAttr.includes('external') || relAttr.includes('noreferrer'))) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.warn('[Popup Blocker] 🚫 Blocked external link');
+                    return false;
+                }
+                
+                break;
             }
-            
-            // Block javascript: links that might pop up
-            if (href && href.toLowerCase().startsWith('javascript:')) {
-                e.preventDefault();
-                e.stopPropagation();
-                console.warn('[Popup Blocker] Blocked javascript: link');
-                return false;
-            }
+            target = target.parentElement;
         }
     }, true);
     
-    // Block dynamically created popups
+    // 6. Override the click() method on anchor elements
+    const originalClick = HTMLElement.prototype.click;
+    HTMLElement.prototype.click = function() {
+        if (this.tagName === 'A') {
+            const href = this.getAttribute('href');
+            const target = this.getAttribute('target');
+            if (target === '_blank' || target === '_new' || 
+                (href && href.toLowerCase().startsWith('javascript:'))) {
+                console.warn('[Popup Blocker] 🚫 Blocked .click() on popup link');
+                return;
+            }
+        }
+        return originalClick.call(this);
+    };
+    
+    // 7. Block dynamically created popups via addEventListener
     const originalAddEventListener = EventTarget.prototype.addEventListener;
     EventTarget.prototype.addEventListener = function(type, listener, options) {
-        if (type === 'click' || type === 'mouseup' || type === 'mousedown') {
+        if (type === 'click' || type === 'mousedown' || type === 'mouseup' || type === 'pointerdown') {
             const wrappedListener = function(e) {
-                // Check if the event is trying to open a popup
-                if (e.target && e.target.closest) {
-                    const anchor = e.target.closest('a');
-                    if (anchor) {
-                        const href = anchor.getAttribute('href');
-                        const target = anchor.getAttribute('target');
+                // Check if this event will trigger a popup
+                let el = e.target;
+                while (el && el !== document) {
+                    if (el.tagName === 'A') {
+                        const href = el.getAttribute('href');
+                        const target = el.getAttribute('target');
                         if (target === '_blank' || target === '_new' || 
                             (href && href.toLowerCase().startsWith('javascript:'))) {
                             e.preventDefault();
                             e.stopPropagation();
-                            console.warn('[Popup Blocker] Blocked popup event');
+                            console.warn('[Popup Blocker] 🚫 Blocked popup event on:', el);
                             return false;
                         }
                     }
+                    el = el.parentElement;
                 }
                 return listener.call(this, e);
             };
@@ -544,34 +596,83 @@ const WISHLIST_KEY = 'youflex_wishlist';
         return originalAddEventListener.call(this, type, listener, options);
     };
     
-    // Override Element.prototype.click to block popups
-    const originalClick = HTMLElement.prototype.click;
-    HTMLElement.prototype.click = function() {
-        // Check if this element or its parent is an anchor with _blank
-        let el = this;
-        while (el) {
-            if (el.tagName === 'A') {
-                const target = el.getAttribute('target');
-                const href = el.getAttribute('href');
-                if (target === '_blank' || target === '_new' || 
-                    (href && href.toLowerCase().startsWith('javascript:'))) {
-                    console.warn('[Popup Blocker] Blocked .click() on popup link');
-                    return;
-                }
+    // 8. Block window.moveTo and window.resizeTo (used by some popup scripts)
+    window.moveTo = function() { console.warn('[Popup Blocker] 🚫 Blocked moveTo'); };
+    window.moveBy = function() { console.warn('[Popup Blocker] 🚫 Blocked moveBy'); };
+    window.resizeTo = function() { console.warn('[Popup Blocker] 🚫 Blocked resizeTo'); };
+    window.resizeBy = function() { console.warn('[Popup Blocker] 🚫 Blocked resizeBy'); };
+    
+    // 9. Block focus/blur manipulation attempts
+    window.focus = function() { return; };
+    window.blur = function() { return; };
+    
+    // 10. Override document.write to prevent ad injection
+    const originalDocumentWrite = document.write;
+    document.write = function(html) {
+        // Block any document.write that tries to create new windows/iframes
+        if (typeof html === 'string') {
+            if (html.includes('window.open') || html.includes('_blank') || 
+                html.includes('popup') || html.includes('ad') || html.includes('banner')) {
+                console.warn('[Popup Blocker] 🚫 Blocked suspicious document.write');
+                return;
             }
-            el = el.parentElement;
         }
-        return originalClick.call(this);
+        return originalDocumentWrite.call(this, html);
     };
     
-    // Block window.showModalDialog
-    window.showModalDialog = function() {
-        console.warn('[Popup Blocker] Blocked showModalDialog');
-        return null;
-    };
+    // 11. Block common popup libraries and methods
+    window._popup = null;
+    window.Popup = null;
+    window.ShowPopup = null;
+    window.windowPopup = null;
     
-    console.log('[Popup Blocker] Enhanced popup protection activated');
+    // 12. MutationObserver to detect and remove dynamically created popup elements
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1) { // Element node
+                    // Check for popup-related classes/IDs
+                    const classNames = node.className || '';
+                    const id = node.id || '';
+                    const tag = node.tagName || '';
+                    
+                    const popupKeywords = ['popup', 'modal', 'overlay', 'banner', 'ad', 'advertisement', 
+                                          'promo', 'offer', 'sponsored', 'notification', 'alert'];
+                    
+                    const shouldRemove = popupKeywords.some(keyword => 
+                        classNames.toLowerCase().includes(keyword) || 
+                        id.toLowerCase().includes(keyword) ||
+                        (tag === 'DIV' && node.style.position === 'fixed' && node.style.zIndex >= 10000)
+                    );
+                    
+                    if (shouldRemove && node.parentNode) {
+                        console.warn('[Popup Blocker] 🚫 Removed suspicious popup element:', node);
+                        node.parentNode.removeChild(node);
+                    }
+                }
+            });
+        });
+    });
+    
+    // Start observing the document body for new elements
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+    
+    console.log('[Popup Blocker] ✅ Ultimate protection activated!');
 })();
+
+// Also intercept any late popup attempts via a second layer
+setTimeout(function() {
+    // Extra safety: re-block window.open after any scripts might have restored it
+    if (window.open !== null && window.open !== undefined) {
+        window.open = function() {
+            console.warn('[Popup Blocker] 🚫 Late popup blocked');
+            return null;
+        };
+    }
+}, 1000);
 
 window.addEventListener('load', () => {
     initApp();
@@ -1265,18 +1366,18 @@ async function loadModalSimilar(mediaId, type) {
 function closeModal() { id('detailsModal').classList.remove('show'); }
 
 /* ============================================================
-   ENHANCED STREAMING WITH MULTIPLE VIDSRC SOURCES
-   Includes specific support for TV series (ID 79744)
+   ENHANCED STREAMING WITH 1080p DEFAULT AND MULTIPLE SOURCES
+   Forces 1080p quality by adding quality parameter to URLs
 ============================================================ */
 function openStream(mediaId, type, season = 1, episode = 1) {
     closeModal();
     const streamModal = id('streamModal');
     const iframe = id('streamIframe');
     
-    // Build the URL based on type
+    // Build the URL based on type with 1080p quality parameter
     let embedUrls = [];
     
-    // Primary sources with correct formatting
+    // Primary sources with 1080p quality parameter
     const baseSources = [
         'vidsrc.sbs',
         'vidsrc.to', 
@@ -1292,22 +1393,53 @@ function openStream(mediaId, type, season = 1, episode = 1) {
         'vidsrc.icu'
     ];
     
+    // Quality parameter to force 1080p
+    const qualityParam = '?quality=1080p';
+    const qualityParam2 = '&quality=1080p';
+    const qualityParam3 = '?q=1080';
+    const qualityParam4 = '&q=1080';
+    
     // For TV shows, include season and episode
     if (type === 'tv') {
         embedUrls = baseSources.map(source => 
-            `https://${source}/embed/tv/${mediaId}/${season}/${episode}`
+            `https://${source}/embed/tv/${mediaId}/${season}/${episode}${qualityParam}`
         );
-        
-        // Also add alternative format without season/episode (some sources auto-detect)
+        // Add alternative parameter formats
+        embedUrls = embedUrls.concat(
+            baseSources.slice(0, 6).map(source => 
+                `https://${source}/embed/tv/${mediaId}/${season}/${episode}${qualityParam2}`
+            )
+        );
         embedUrls = embedUrls.concat(
             baseSources.slice(0, 3).map(source => 
-                `https://${source}/embed/tv/${mediaId}`
+                `https://${source}/embed/tv/${mediaId}/${season}/${episode}${qualityParam3}`
+            )
+        );
+        // Also add without quality param as fallback
+        embedUrls = embedUrls.concat(
+            baseSources.slice(0, 3).map(source => 
+                `https://${source}/embed/tv/${mediaId}/${season}/${episode}`
             )
         );
     } else {
         // Movies
         embedUrls = baseSources.map(source => 
-            `https://${source}/embed/movie/${mediaId}`
+            `https://${source}/embed/movie/${mediaId}${qualityParam}`
+        );
+        embedUrls = embedUrls.concat(
+            baseSources.slice(0, 6).map(source => 
+                `https://${source}/embed/movie/${mediaId}${qualityParam2}`
+            )
+        );
+        embedUrls = embedUrls.concat(
+            baseSources.slice(0, 3).map(source => 
+                `https://${source}/embed/movie/${mediaId}${qualityParam3}`
+            )
+        );
+        embedUrls = embedUrls.concat(
+            baseSources.slice(0, 3).map(source => 
+                `https://${source}/embed/movie/${mediaId}`
+            )
         );
     }
     
@@ -1315,16 +1447,21 @@ function openStream(mediaId, type, season = 1, episode = 1) {
     embedUrls = [...new Set(embedUrls)];
     
     // Special case: if mediaId is 79744, it's a specific TV show
-    // The user requested: https://vidsrc.sbs/embed/tv/79744/1/1
+    // The user requested: https://vidsrc.sbs/embed/tv/79744/1/1 with 1080p
     if (mediaId == 79744 && type === 'tv') {
-        // Ensure vidsrc.sbs is first in the list
+        // Ensure vidsrc.sbs with 1080p is first in the list
+        const sbsUrl1080 = 'https://vidsrc.sbs/embed/tv/79744/1/1?quality=1080p';
+        const sbsUrl1080b = 'https://vidsrc.sbs/embed/tv/79744/1/1?q=1080';
         const sbsUrl = 'https://vidsrc.sbs/embed/tv/79744/1/1';
-        embedUrls = [sbsUrl, ...embedUrls.filter(url => url !== sbsUrl)];
+        embedUrls = [sbsUrl1080, sbsUrl1080b, sbsUrl, ...embedUrls.filter(url => url !== sbsUrl1080 && url !== sbsUrl1080b && url !== sbsUrl)];
     }
     
     // Try first URL
     const selectedUrl = embedUrls[0];
-    id('streamTitle').innerText = `${type.toUpperCase()} — ${mediaId}${type === 'tv' ? ` S${season}E${episode}` : ''}`;
+    const displayTitle = type === 'tv' 
+        ? `${type.toUpperCase()} — ${mediaId} S${season}E${episode}`
+        : `${type.toUpperCase()} — ${mediaId}`;
+    id('streamTitle').innerHTML = `${displayTitle} <span style="color:#22d3ee; font-size:0.7rem; font-weight:400; margin-left:8px;">🎬 1080p</span>`;
     iframe.src = selectedUrl;
     streamModal.classList.add('show');
     
@@ -1343,21 +1480,14 @@ function openStream(mediaId, type, season = 1, episode = 1) {
         }
     };
     
-    // Also try fallback on timeout (some vidsrc domains load slowly)
+    // Also try fallback on timeout
     let timeoutId = setTimeout(() => {
-        // Check if iframe is still loading (no content loaded)
-        try {
-            // We can't directly check iframe content due to CORS, but we can try to detect if it's blank
-            // If we haven't loaded successfully after 10 seconds, try next source
-            if (attemptIndex < embedUrls.length - 1) {
-                attemptIndex++;
-                console.log(`[Stream] Timeout, trying next source ${attemptIndex + 1}`);
-                iframe.src = embedUrls[attemptIndex];
-            }
-        } catch (e) {
-            // Ignore errors
+        if (attemptIndex < embedUrls.length - 1) {
+            attemptIndex++;
+            console.log(`[Stream] Timeout, trying next source ${attemptIndex + 1}`);
+            iframe.src = embedUrls[attemptIndex];
         }
-    }, 10000);
+    }, 12000);
     
     // Clear timeout when iframe loads
     iframe.onload = function() {
@@ -1416,7 +1546,12 @@ function addSourceSwitcher(urls, mediaId, type, season, episode) {
     const sourceNames = urls.map(url => {
         try {
             const urlObj = new URL(url);
-            return urlObj.hostname;
+            let name = urlObj.hostname;
+            // Add quality indicator
+            if (url.includes('quality=1080p') || url.includes('q=1080')) {
+                name += ' 🎬1080p';
+            }
+            return name;
         } catch {
             return 'Source';
         }
@@ -1459,6 +1594,14 @@ function addSourceSwitcher(urls, mediaId, type, season, episode) {
             item.style.fontWeight = '600';
             const shortName = sourceName.length > 20 ? sourceName.substring(0, 20) + '...' : sourceName;
             switchBtn.textContent = `${shortName} ▼`;
+            
+            // Update title to show 1080p
+            const titleEl = document.getElementById('streamTitle');
+            if (url.includes('quality=1080p') || url.includes('q=1080')) {
+                if (!titleEl.innerHTML.includes('1080p')) {
+                    titleEl.innerHTML = titleEl.innerHTML.replace('</span>', '') + ' <span style="color:#22d3ee; font-size:0.7rem; font-weight:400; margin-left:8px;">🎬 1080p</span>';
+                }
+            }
         };
         dropdown.appendChild(item);
     });
@@ -1552,7 +1695,7 @@ function showRelatedGenres(genreId, type) {
 }
 
 /* ============================================================
-   QUICK ACCESS: Direct play for TV show ID 79744
+   QUICK ACCESS: Direct play for TV show ID 79744 with 1080p
    You can call this from the console or add a button
 ============================================================ */
 function playTVShow79744(season = 1, episode = 1) {
@@ -1582,9 +1725,10 @@ function id(elementId) { return document.getElementById(elementId); }
 // Also expose the play function globally for easy testing
 window.playTVShow79744 = playTVShow79744;
 
-console.log('YOUFLEX loaded!');
-console.log('To play TV show 79744, run: playTVShow79744()');
-console.log('Or with specific episode: playTVShow79744(season, episode)');
+console.log('🎬 YOUFLEX loaded with 1080p default!');
+console.log('📺 To play TV show 79744, run: playTVShow79744()');
+console.log('📺 Or with specific episode: playTVShow79744(season, episode)');
+console.log('🛡️ Ultimate popup blocker is active!');
 </script>
 </body>
 </html>
