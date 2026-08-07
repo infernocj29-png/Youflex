@@ -9,9 +9,6 @@
 <link rel="icon" type="image/png" href="/logo.png">
 
 <style>
-/* ============================================================
-   TOKENS & BASE STYLES
-============================================================ */
 * { margin:0; padding:0; box-sizing:border-box; }
 :root {
     --bg: #07090e; --bg2: #0d111a; --card: #121824; --txt: #ffffff; --muted: #8e9bb0;
@@ -35,7 +32,6 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 
 .app { display:flex; flex-direction:column; min-height:100vh; }
 
-/* UTILITY BANNER & TOAST */
 .offline-banner { position:fixed; top:0; left:0; right:0; z-index:999999; background:var(--hbg); border-bottom:2px solid var(--danger); transform:translateY(-100%); transition:transform .4s; }
 .offline-banner.show { transform:translateY(0); }
 .offline-banner-inner { display:flex; align-items:center; justify-content:space-between; padding:10px 18px; max-width:680px; margin:0 auto; font-size:0.85rem; }
@@ -47,9 +43,6 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 .back-to-top.show { opacity:1; visibility:visible; }
 .back-to-top:hover { transform:scale(1.08); background:var(--accent); border-color:var(--accent); }
 
-/* ============================================================
-   HEADER & NAVIGATION
-============================================================ */
 .main-header {
     background: linear-gradient(to bottom, rgba(7,9,14,0.95), rgba(7,9,14,0));
     padding: 1.2rem 2.5rem; display: flex; align-items: center; justify-content: space-between;
@@ -82,7 +75,6 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 .autocomplete-poster { width: 36px; height: 50px; border-radius: 4px; object-fit: cover; }
 .autocomplete-title { font-weight: 600; font-size: 0.85rem; color: var(--txt); }
 
-/* Surprise Me button — matches header icon language */
 .surprise-btn {
     width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.08);
     border: 1px solid rgba(255,255,255,0.12); color: #fff; cursor: pointer; font-size: 0.85rem;
@@ -90,9 +82,6 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 }
 .surprise-btn:hover { background: var(--accent); border-color: var(--accent); transform: rotate(20deg); }
 
-/* ============================================================
-   HERO SHOWCASE SECTION
-============================================================ */
 .hero-wrapper {
     position: relative; width: 100%; min-height: 85vh; padding: 6rem 2.5rem 2rem;
     display: flex; flex-direction: column; justify-content: flex-end;
@@ -111,14 +100,12 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 
 .hero-description { font-size: 0.92rem; line-height: 1.55; color: rgba(255,255,255,0.75); margin-bottom: 1.5rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
-/* Cast List */
 .hero-cast-section { margin-bottom: 1.8rem; }
 .hero-cast-label { font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 0.6rem; }
 .hero-cast-list { display: flex; align-items: center; gap: 10px; }
 .cast-avatar-item { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; border: 2px solid rgba(255,255,255,0.2); flex-shrink: 0; background: #202b3c; }
 .cast-avatar-item img { width: 100%; height: 100%; object-fit: cover; }
 
-/* Hero Actions */
 .hero-actions { display: flex; align-items: center; gap: 12px; margin-bottom: 2rem; }
 .btn-play-now {
     background: var(--gradient-accent); color: #fff; border: none; padding: 12px 32px; border-radius: 30px;
@@ -140,7 +127,6 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 }
 .btn-trailer:hover { border-color: var(--accent2); color: var(--accent2); }
 
-/* Episodes Card */
 .hero-episodes-card { position: absolute; right: 2.5rem; bottom: 2.5rem; z-index: 10; display: flex; flex-direction: column; align-items: flex-end; }
 .episodes-card-header { font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.6); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.5rem; }
 .episodes-row { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; }
@@ -155,7 +141,6 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 
 .top10-badge { position: absolute; right: 2.5rem; top: 7rem; z-index: 10; background: var(--accent); color: #fff; width: 36px; padding: 6px 0; border-radius: 4px; text-align: center; font-weight: 800; font-size: 0.7rem; line-height: 1.1; box-shadow: 0 4px 14px var(--aglow); }
 
-/* Hero carousel dot indicators */
 .hero-dots { position: relative; z-index: 10; display: flex; gap: 8px; margin-top: 0.4rem; margin-bottom: 1.4rem; }
 .hero-dot { width: 22px; height: 4px; border-radius: 3px; background: rgba(255,255,255,0.25); cursor: pointer; transition: background 0.25s, width 0.25s; }
 .hero-dot.active { background: var(--accent); width: 34px; }
@@ -169,9 +154,6 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 .hero-category-badge.upcoming { color: var(--accent2); }
 .hero-category-badge.now-playing { color: #22c55e; }
 
-/* ============================================================
-   GRID CONTENT & CATEGORIES
-============================================================ */
 .content-wrapper { padding: 1.5rem 2.5rem 3rem; }
 .categories-nav { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 1.5rem; scrollbar-width: none; }
 .category-item { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); padding: 8px 18px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: 0.2s; border: 1px solid rgba(255,255,255,0.08); }
@@ -179,7 +161,6 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 
 .section-heading { font-size: 1.05rem; font-weight: 700; margin: 0 0 0.9rem; display: flex; align-items: center; gap: 8px; }
 
-/* Filter bar */
 .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.2rem; align-items: center; }
 .filter-select {
     background: rgba(255,255,255,0.06); color: var(--txt); border: 1px solid rgba(255,255,255,0.12);
@@ -190,7 +171,6 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 .filter-bar.disabled .filter-select { opacity: 0.4; pointer-events: none; }
 .filter-bar-note { font-size: 0.75rem; color: var(--muted); }
 
-/* Recommended-for-you / related-genres rows (reuse similar-card visuals) */
 .reco-section { margin-bottom: 1.8rem; }
 .reco-row { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; }
 .related-genres-row { display: flex; gap: 8px; flex-wrap: wrap; margin: -0.4rem 0 1.2rem; }
@@ -211,7 +191,6 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 .movie-release-date { font-size: 0.7rem; color: var(--muted); margin-top: 3px; display: flex; align-items: center; gap: 4px; }
 .movie-release-date.upcoming-tag { color: var(--accent2); font-weight: 600; }
 
-/* Wishlist heart on poster */
 .wishlist-heart {
     position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 50%;
     background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); color: #fff; display: flex;
@@ -224,28 +203,24 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 .empty-state { text-align: center; padding: 4rem 1rem; color: var(--muted); }
 .empty-state i { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.5; }
 
-/* Horizontal similar-titles row inside modal */
 .similar-row { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; }
 .similar-card { flex-shrink: 0; width: 120px; cursor: pointer; border-radius: 8px; overflow: hidden; background: var(--card); border: 1px solid rgba(255,255,255,0.05); transition: transform .2s; }
 .similar-card:hover { transform: translateY(-4px); }
 .similar-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
 .similar-card-title { font-size: 0.72rem; font-weight: 600; padding: 6px 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* Cast grid inside modal */
 .cast-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 14px; }
 .cast-grid-item { text-align: center; }
 .cast-grid-photo { width: 100%; aspect-ratio: 1/1; border-radius: 50%; object-fit: cover; background: #1a2232; margin-bottom: 6px; }
 .cast-grid-name { font-size: 0.78rem; font-weight: 700; }
 .cast-grid-character { font-size: 0.7rem; color: var(--muted); }
 
-/* Watch provider logos */
 .provider-row { display: flex; gap: 10px; flex-wrap: wrap; }
 .provider-logo { width: 46px; height: 46px; border-radius: 10px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); }
 .provider-empty { font-size: 0.85rem; color: var(--muted); }
 
 .modal-section-title { font-size: 0.95rem; font-weight: 700; margin: 1.6rem 0 0.8rem; letter-spacing: 0.3px; }
 
-/* MODALS */
 .modal { position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:2000; display:none; align-items:center; justify-content:center; padding:1rem; }
 .modal.show { display:flex; }
 .modal-content { background:var(--bg2); border-radius:12px; max-width:850px; width:100%; max-height:90vh; overflow-y:auto; border:1px solid var(--border); position:relative; }
@@ -261,7 +236,6 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 .stream-video-area { flex:1; background:#000; position:relative; }
 .stream-iframe { position:absolute; inset:0; width:100%; height:100%; border:none; }
 
-/* Quality selector overlay */
 .quality-selector {
     position: absolute;
     bottom: 20px;
@@ -301,7 +275,6 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
 <body>
 <div class="app">
 
-    <!-- Offline Notification Banner -->
     <div class="offline-banner" id="offlineBanner">
         <div class="offline-banner-inner">
             <div><i class="fa-solid fa-wifi"></i> Offline - Check connection</div>
@@ -309,17 +282,14 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
         </div>
     </div>
 
-    <!-- Theme Toggle Switch -->
     <button class="theme-toggle" id="themeToggleBtn" title="Toggle Light/Dark Theme">
         <i class="fa-solid fa-moon"></i>
     </button>
 
-    <!-- Back to Top -->
     <button class="back-to-top" id="backToTopBtn" title="Back to Top">
         <i class="fa-solid fa-arrow-up"></i>
     </button>
 
-    <!-- Navigation Header -->
     <header class="main-header" id="mainHeader">
         <div class="header-left">
             <a class="header-logo" onclick="fetchCategory('trending')">
@@ -347,7 +317,6 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
         </div>
     </header>
 
-    <!-- Main Hero Banner -->
     <section class="hero-wrapper" id="heroSection">
         <div class="hero-backdrop-overlay"></div>
         <div class="top10-badge">TOP<br><span style="font-size: 1rem;">10</span></div>
@@ -388,7 +357,6 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
         </div>
     </section>
 
-    <!-- Recommended For You -->
     <main class="content-wrapper" style="padding-bottom:0;">
         <div class="reco-section" id="recoSection" style="display:none;">
             <h2 class="section-heading" id="recoHeading"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent);"></i> Recommended For You</h2>
@@ -396,7 +364,6 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
         </div>
     </main>
 
-    <!-- Category Grid Showcase -->
     <main class="content-wrapper" style="padding-top:0;">
         <div class="categories-nav" id="categoryNav">
             <div class="category-item active" onclick="fetchCategory('trending', this)">Trending</div>
@@ -408,7 +375,6 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
             <div class="category-item" id="moreGenresToggle" onclick="toggleGenreRow()">Genres <i class="fa-solid fa-chevron-down" style="font-size:0.65rem; margin-left:2px;"></i></div>
         </div>
         <div class="categories-nav" id="genreRow" style="display:none; flex-wrap:wrap; overflow:visible;">
-            <!-- Dynamic genre chips populate here, grouped by current context (movie/tv) -->
         </div>
 
         <div class="filter-bar" id="filterBar">
@@ -427,7 +393,6 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
             </select>
             <select class="filter-select" id="filterYear" onchange="applyFilters()">
                 <option value="">Any Year</option>
-                <!-- Populated with recent years by JS -->
             </select>
             <span class="filter-bar-note" id="filterBarNote" style="display:none;">Filters apply to Movies / TV / Top Rated / Anime / Animation / Genres</span>
         </div>
@@ -439,7 +404,6 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
         <div id="gridEndMsg" style="display:none; text-align:center; padding:1.5rem; color:var(--muted); font-size:0.85rem;">You've reached the end.</div>
     </main>
 
-    <!-- Details Overlay Modal -->
     <div class="modal" id="detailsModal">
         <div class="modal-content">
             <div class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></div>
@@ -447,7 +411,6 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
         </div>
     </div>
 
-    <!-- Embed Video Player Modal (also used for YouTube trailers) -->
     <div class="streaming-modal" id="streamModal">
         <div class="streaming-inner">
             <div class="stream-topbar" id="streamTopbar">
@@ -476,203 +439,103 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
 </div>
 
 <script>
-/* ============================================================
-   ULTIMATE POPUP BLOCKER - Completely blocks ALL popup attempts
-   This is the most comprehensive popup blocker you can use
-============================================================ */
+const TMDB_API_KEY = '33ef7aaa3002731060f718f25dd995ac';
+const TMDB_BASE = 'https://api.themoviedb.org/3';
+const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
+const HERO_IMAGE_BASE = 'https://image.tmdb.org/t/p/original';
+const PROVIDER_LOGO_BASE = 'https://image.tmdb.org/t/p/w92';
+
+function tmdb(path, params = {}) {
+    const url = new URL(`${TMDB_BASE}${path}`);
+    url.searchParams.set('api_key', TMDB_API_KEY);
+    Object.keys(params).forEach(k => {
+        if (params[k] !== undefined && params[k] !== null) url.searchParams.set(k, params[k]);
+    });
+    return fetch(url.toString());
+}
+
+let GENRES = {
+    28: "Action", 12: "Adventure", 16: "Animation", 35: "Comedy", 80: "Crime",
+    99: "Documentary", 18: "Drama", 10751: "Family", 14: "Fantasy", 36: "History",
+    27: "Horror", 10402: "Music", 9648: "Mystery", 10749: "Romance", 878: "Sci-Fi",
+    10770: "TV Movie", 53: "Thriller", 10752: "War", 37: "Western", 10759: "Action & Adventure",
+    10765: "Sci-Fi & Fantasy", 10762: "Kids", 10763: "News", 10764: "Reality", 10766: "Soap",
+    10767: "Talk", 10768: "War & Politics"
+};
+
+let currentHeroItem = null;
+let currentContext = 'movie';
+const WISHLIST_KEY = 'youflex_wishlist';
+
+/* ULTIMATE POPUP BLOCKER */
 (function ultimatePopupBlocker() {
-    console.log('[Popup Blocker] Activating ultimate protection...');
+    window.open = function() { console.warn('[Popup Blocker] Blocked window.open'); return null; };
+    if (window.showModalDialog) window.showModalDialog = function() { return null; };
+    if (window.createPopup) window.createPopup = function() { return null; };
+    if (window.openDialog) window.openDialog = function() { return null; };
     
-    // 1. Block window.open completely
-    const originalWindowOpen = window.open;
-    window.open = function(url, name, features) {
-        console.warn('[Popup Blocker] 🚫 Blocked window.open:', url || '(empty)');
-        return null;
-    };
-    
-    // 2. Block window.showModalDialog
-    if (window.showModalDialog) {
-        window.showModalDialog = function() {
-            console.warn('[Popup Blocker] 🚫 Blocked showModalDialog');
-            return null;
-        };
-    }
-    
-    // 3. Block window.createPopup (IE)
-    if (window.createPopup) {
-        window.createPopup = function() {
-            console.warn('[Popup Blocker] 🚫 Blocked createPopup');
-            return null;
-        };
-    }
-    
-    // 4. Block window.openDialog (Firefox)
-    if (window.openDialog) {
-        window.openDialog = function() {
-            console.warn('[Popup Blocker] 🚫 Blocked openDialog');
-            return null;
-        };
-    }
-    
-    // 5. Override target="_blank" on all links
     document.addEventListener('click', function(e) {
         let target = e.target;
         while (target && target !== document) {
             if (target.tagName === 'A') {
                 const href = target.getAttribute('href');
                 const targetAttr = target.getAttribute('target');
-                const relAttr = target.getAttribute('rel');
-                
-                // Block _blank, _new, or any popup trigger
                 if (targetAttr === '_blank' || targetAttr === '_new' || targetAttr === '_popup') {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.warn('[Popup Blocker] 🚫 Blocked _blank link:', href);
                     return false;
                 }
-                
-                // Block javascript: URLs
                 if (href && href.toLowerCase().startsWith('javascript:')) {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.warn('[Popup Blocker] 🚫 Blocked javascript: link');
                     return false;
                 }
-                
-                // Block links with rel="external" or rel="noreferrer" that might popup
-                if (relAttr && (relAttr.includes('external') || relAttr.includes('noreferrer'))) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.warn('[Popup Blocker] 🚫 Blocked external link');
-                    return false;
-                }
-                
                 break;
             }
             target = target.parentElement;
         }
     }, true);
     
-    // 6. Override the click() method on anchor elements
     const originalClick = HTMLElement.prototype.click;
     HTMLElement.prototype.click = function() {
         if (this.tagName === 'A') {
-            const href = this.getAttribute('href');
             const target = this.getAttribute('target');
-            if (target === '_blank' || target === '_new' || 
-                (href && href.toLowerCase().startsWith('javascript:'))) {
-                console.warn('[Popup Blocker] 🚫 Blocked .click() on popup link');
+            if (target === '_blank' || target === '_new') {
+                console.warn('[Popup Blocker] Blocked .click()');
                 return;
             }
         }
         return originalClick.call(this);
     };
     
-    // 7. Block dynamically created popups via addEventListener
-    const originalAddEventListener = EventTarget.prototype.addEventListener;
-    EventTarget.prototype.addEventListener = function(type, listener, options) {
-        if (type === 'click' || type === 'mousedown' || type === 'mouseup' || type === 'pointerdown') {
-            const wrappedListener = function(e) {
-                // Check if this event will trigger a popup
-                let el = e.target;
-                while (el && el !== document) {
-                    if (el.tagName === 'A') {
-                        const href = el.getAttribute('href');
-                        const target = el.getAttribute('target');
-                        if (target === '_blank' || target === '_new' || 
-                            (href && href.toLowerCase().startsWith('javascript:'))) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            console.warn('[Popup Blocker] 🚫 Blocked popup event on:', el);
-                            return false;
-                        }
-                    }
-                    el = el.parentElement;
-                }
-                return listener.call(this, e);
-            };
-            return originalAddEventListener.call(this, type, wrappedListener, options);
-        }
-        return originalAddEventListener.call(this, type, listener, options);
-    };
+    window.moveTo = function() {};
+    window.moveBy = function() {};
+    window.resizeTo = function() {};
+    window.resizeBy = function() {};
+    window.focus = function() {};
+    window.blur = function() {};
     
-    // 8. Block window.moveTo and window.resizeTo (used by some popup scripts)
-    window.moveTo = function() { console.warn('[Popup Blocker] 🚫 Blocked moveTo'); };
-    window.moveBy = function() { console.warn('[Popup Blocker] 🚫 Blocked moveBy'); };
-    window.resizeTo = function() { console.warn('[Popup Blocker] 🚫 Blocked resizeTo'); };
-    window.resizeBy = function() { console.warn('[Popup Blocker] 🚫 Blocked resizeBy'); };
-    
-    // 9. Block focus/blur manipulation attempts
-    window.focus = function() { return; };
-    window.blur = function() { return; };
-    
-    // 10. Override document.write to prevent ad injection
-    const originalDocumentWrite = document.write;
-    document.write = function(html) {
-        // Block any document.write that tries to create new windows/iframes
-        if (typeof html === 'string') {
-            if (html.includes('window.open') || html.includes('_blank') || 
-                html.includes('popup') || html.includes('ad') || html.includes('banner')) {
-                console.warn('[Popup Blocker] 🚫 Blocked suspicious document.write');
-                return;
-            }
-        }
-        return originalDocumentWrite.call(this, html);
-    };
-    
-    // 11. Block common popup libraries and methods
-    window._popup = null;
-    window.Popup = null;
-    window.ShowPopup = null;
-    window.windowPopup = null;
-    
-    // 12. MutationObserver to detect and remove dynamically created popup elements
     const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             mutation.addedNodes.forEach(function(node) {
-                if (node.nodeType === 1) { // Element node
-                    // Check for popup-related classes/IDs
+                if (node.nodeType === 1) {
                     const classNames = node.className || '';
                     const id = node.id || '';
-                    const tag = node.tagName || '';
-                    
-                    const popupKeywords = ['popup', 'modal', 'overlay', 'banner', 'ad', 'advertisement', 
-                                          'promo', 'offer', 'sponsored', 'notification', 'alert'];
-                    
+                    const popupKeywords = ['popup', 'modal', 'overlay', 'banner', 'ad', 'advertisement', 'promo', 'offer', 'sponsored'];
                     const shouldRemove = popupKeywords.some(keyword => 
                         classNames.toLowerCase().includes(keyword) || 
-                        id.toLowerCase().includes(keyword) ||
-                        (tag === 'DIV' && node.style.position === 'fixed' && node.style.zIndex >= 10000)
+                        id.toLowerCase().includes(keyword)
                     );
-                    
                     if (shouldRemove && node.parentNode) {
-                        console.warn('[Popup Blocker] 🚫 Removed suspicious popup element:', node);
                         node.parentNode.removeChild(node);
                     }
                 }
             });
         });
     });
-    
-    // Start observing the document body for new elements
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
-    
-    console.log('[Popup Blocker] ✅ Ultimate protection activated!');
+    observer.observe(document.body, { childList: true, subtree: true });
+    console.log('[Popup Blocker] Activated');
 })();
-
-// Also intercept any late popup attempts via a second layer
-setTimeout(function() {
-    // Extra safety: re-block window.open after any scripts might have restored it
-    if (window.open !== null && window.open !== undefined) {
-        window.open = function() {
-            console.warn('[Popup Blocker] 🚫 Late popup blocked');
-            return null;
-        };
-    }
-}, 1000);
 
 window.addEventListener('load', () => {
     initApp();
@@ -692,7 +555,6 @@ function initApp() {
     setupBackToTop();
     id('surpriseBtn').addEventListener('click', surpriseMe);
     populateYearFilter();
-
     const hero = id('heroSection');
     hero.addEventListener('mouseenter', () => { if (heroTimer) clearInterval(heroTimer); });
     hero.addEventListener('mouseleave', startHeroRotation);
@@ -708,7 +570,7 @@ async function loadAllGenres() {
         [...(movieGenres.genres || []), ...(tvGenres.genres || [])].forEach(g => { merged[g.id] = g.name; });
         GENRES = { ...GENRES, ...merged };
     } catch (e) {
-        console.error('Genre load failed, using fallback labels:', e);
+        console.error('Genre load failed:', e);
     }
 }
 
@@ -740,8 +602,6 @@ function toggleGenreRow() {
         : 'Genres <i class="fa-solid fa-chevron-up" style="font-size:0.65rem; margin-left:2px;"></i>';
 }
 
-/* Curated Anime / Animation shortcuts (both discoverable via genre chips too,
-   but surfaced up top since they're commonly-requested categories) */
 function fetchAnime(element) {
     document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
     if (element) element.classList.add('active');
@@ -837,7 +697,7 @@ function goToHeroSlide(i) {
     currentHeroItem = heroItems[heroIndex];
     renderHero(currentHeroItem);
     document.querySelectorAll('.hero-dot').forEach((d, idx) => d.classList.toggle('active', idx === heroIndex));
-    startHeroRotation(); // reset timer on manual interaction
+    startHeroRotation();
 }
 
 function startHeroRotation() {
@@ -907,7 +767,7 @@ async function renderHero(item) {
             id('heroTrailerBtn').style.display = 'flex';
             id('heroTrailerBtn').onclick = () => playTrailer(trailer.key, title);
         }
-    } catch (e) { /* trailer is optional, fail quietly */ }
+    } catch (e) {}
 }
 
 function formatReleaseDate(dateStr) {
@@ -978,11 +838,6 @@ async function fetchEpisodes(tvId) {
     }
 }
 
-/* ============================================================
-   INFINITE SCROLL ENGINE
-   gridState tracks the active TMDB query so we can keep pulling
-   subsequent pages as the user scrolls, instead of a fixed page.
-============================================================ */
 const gridState = { path: null, params: {}, page: 1, forcedType: null, filterable: false, loading: false, done: false };
 
 function populateYearFilter() {
@@ -1200,7 +1055,6 @@ function showWishlist(element) {
     heading.style.display = 'flex';
     heading.innerHTML = '<i class="fa-solid fa-heart" style="color:var(--accent);"></i> My List';
 
-    // Static list — no further pages to paginate through
     gridState.path = null;
     gridState.done = true;
     id('gridEndMsg').style.display = 'none';
@@ -1365,19 +1219,13 @@ async function loadModalSimilar(mediaId, type) {
 
 function closeModal() { id('detailsModal').classList.remove('show'); }
 
-/* ============================================================
-   ENHANCED STREAMING WITH 1080p DEFAULT AND MULTIPLE SOURCES
-   Forces 1080p quality by adding quality parameter to URLs
-============================================================ */
 function openStream(mediaId, type, season = 1, episode = 1) {
     closeModal();
     const streamModal = id('streamModal');
     const iframe = id('streamIframe');
     
-    // Build the URL based on type with 1080p quality parameter
     let embedUrls = [];
     
-    // Primary sources with 1080p quality parameter
     const baseSources = [
         'vidsrc.sbs',
         'vidsrc.to', 
@@ -1393,239 +1241,52 @@ function openStream(mediaId, type, season = 1, episode = 1) {
         'vidsrc.icu'
     ];
     
-    // Quality parameter to force 1080p
-    const qualityParam = '?quality=1080p';
-    const qualityParam2 = '&quality=1080p';
-    const qualityParam3 = '?q=1080';
-    const qualityParam4 = '&q=1080';
+    const qualityParams = ['?quality=1080p', '&quality=1080p', '?q=1080', '&q=1080', ''];
     
-    // For TV shows, include season and episode
     if (type === 'tv') {
-        embedUrls = baseSources.map(source => 
-            `https://${source}/embed/tv/${mediaId}/${season}/${episode}${qualityParam}`
-        );
-        // Add alternative parameter formats
-        embedUrls = embedUrls.concat(
-            baseSources.slice(0, 6).map(source => 
-                `https://${source}/embed/tv/${mediaId}/${season}/${episode}${qualityParam2}`
-            )
-        );
-        embedUrls = embedUrls.concat(
-            baseSources.slice(0, 3).map(source => 
-                `https://${source}/embed/tv/${mediaId}/${season}/${episode}${qualityParam3}`
-            )
-        );
-        // Also add without quality param as fallback
-        embedUrls = embedUrls.concat(
-            baseSources.slice(0, 3).map(source => 
-                `https://${source}/embed/tv/${mediaId}/${season}/${episode}`
-            )
-        );
+        baseSources.forEach(source => {
+            qualityParams.forEach(q => {
+                embedUrls.push(`https://${source}/embed/tv/${mediaId}/${season}/${episode}${q}`);
+            });
+        });
     } else {
-        // Movies
-        embedUrls = baseSources.map(source => 
-            `https://${source}/embed/movie/${mediaId}${qualityParam}`
-        );
-        embedUrls = embedUrls.concat(
-            baseSources.slice(0, 6).map(source => 
-                `https://${source}/embed/movie/${mediaId}${qualityParam2}`
-            )
-        );
-        embedUrls = embedUrls.concat(
-            baseSources.slice(0, 3).map(source => 
-                `https://${source}/embed/movie/${mediaId}${qualityParam3}`
-            )
-        );
-        embedUrls = embedUrls.concat(
-            baseSources.slice(0, 3).map(source => 
-                `https://${source}/embed/movie/${mediaId}`
-            )
-        );
+        baseSources.forEach(source => {
+            qualityParams.forEach(q => {
+                embedUrls.push(`https://${source}/embed/movie/${mediaId}${q}`);
+            });
+        });
     }
     
-    // Remove duplicates
     embedUrls = [...new Set(embedUrls)];
     
-    // Special case: if mediaId is 79744, it's a specific TV show
-    // The user requested: https://vidsrc.sbs/embed/tv/79744/1/1 with 1080p
     if (mediaId == 79744 && type === 'tv') {
-        // Ensure vidsrc.sbs with 1080p is first in the list
         const sbsUrl1080 = 'https://vidsrc.sbs/embed/tv/79744/1/1?quality=1080p';
-        const sbsUrl1080b = 'https://vidsrc.sbs/embed/tv/79744/1/1?q=1080';
-        const sbsUrl = 'https://vidsrc.sbs/embed/tv/79744/1/1';
-        embedUrls = [sbsUrl1080, sbsUrl1080b, sbsUrl, ...embedUrls.filter(url => url !== sbsUrl1080 && url !== sbsUrl1080b && url !== sbsUrl)];
+        embedUrls = [sbsUrl1080, ...embedUrls.filter(url => url !== sbsUrl1080)];
     }
     
-    // Try first URL
     const selectedUrl = embedUrls[0];
-    const displayTitle = type === 'tv' 
-        ? `${type.toUpperCase()} — ${mediaId} S${season}E${episode}`
-        : `${type.toUpperCase()} — ${mediaId}`;
-    id('streamTitle').innerHTML = `${displayTitle} <span style="color:#22d3ee; font-size:0.7rem; font-weight:400; margin-left:8px;">🎬 1080p</span>`;
+    id('streamTitle').innerHTML = `${type.toUpperCase()} — ${mediaId}${type === 'tv' ? ` S${season}E${episode}` : ''} <span style="color:#22d3ee; font-size:0.7rem; font-weight:400; margin-left:8px;">🎬 1080p</span>`;
     iframe.src = selectedUrl;
     streamModal.classList.add('show');
     
-    // Add source switcher with the full list
-    addSourceSwitcher(embedUrls, mediaId, type, season, episode);
-    
-    // Handle loading errors with automatic fallback
     let attemptIndex = 0;
     iframe.onerror = function() {
         attemptIndex++;
         if (attemptIndex < embedUrls.length) {
-            console.log(`[Stream] Attempting fallback source ${attemptIndex + 1}/${embedUrls.length}`);
             iframe.src = embedUrls[attemptIndex];
-        } else {
-            console.error('[Stream] All sources failed');
         }
     };
     
-    // Also try fallback on timeout
     let timeoutId = setTimeout(() => {
         if (attemptIndex < embedUrls.length - 1) {
             attemptIndex++;
-            console.log(`[Stream] Timeout, trying next source ${attemptIndex + 1}`);
             iframe.src = embedUrls[attemptIndex];
         }
     }, 12000);
     
-    // Clear timeout when iframe loads
     iframe.onload = function() {
         clearTimeout(timeoutId);
     };
-}
-
-function addSourceSwitcher(urls, mediaId, type, season, episode) {
-    const topBar = document.getElementById('streamTopbar');
-    const existingBtn = document.getElementById('sourceSwitchBtn');
-    const existingDropdown = document.getElementById('sourceDropdown');
-    
-    // Remove existing button and dropdown if present
-    if (existingBtn) existingBtn.remove();
-    if (existingDropdown) existingDropdown.remove();
-    
-    // Create dropdown/button for source switching
-    const switchBtn = document.createElement('div');
-    switchBtn.id = 'sourceSwitchBtn';
-    switchBtn.style.cssText = `
-        color: rgba(255,255,255,0.7);
-        font-size: 0.75rem;
-        cursor: pointer;
-        margin-right: 12px;
-        padding: 4px 10px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 4px;
-        transition: 0.2s;
-        user-select: none;
-        white-space: nowrap;
-    `;
-    switchBtn.textContent = 'Switch Source ▼';
-    switchBtn.onmouseover = () => switchBtn.style.background = 'rgba(255,255,255,0.2)';
-    switchBtn.onmouseout = () => switchBtn.style.background = 'rgba(255,255,255,0.1)';
-    
-    // Create dropdown menu
-    const dropdown = document.createElement('div');
-    dropdown.id = 'sourceDropdown';
-    dropdown.style.cssText = `
-        position: absolute;
-        top: 100%;
-        right: 0;
-        background: #1a1a2e;
-        border: 1px solid #333;
-        border-radius: 8px;
-        padding: 8px 0;
-        min-width: 160px;
-        display: none;
-        z-index: 20;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.8);
-        max-height: 300px;
-        overflow-y: auto;
-    `;
-    
-    // Extract source names from URLs
-    const sourceNames = urls.map(url => {
-        try {
-            const urlObj = new URL(url);
-            let name = urlObj.hostname;
-            // Add quality indicator
-            if (url.includes('quality=1080p') || url.includes('q=1080')) {
-                name += ' 🎬1080p';
-            }
-            return name;
-        } catch {
-            return 'Source';
-        }
-    });
-    
-    urls.forEach((url, index) => {
-        const item = document.createElement('div');
-        item.style.cssText = `
-            padding: 8px 16px;
-            color: rgba(255,255,255,0.8);
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: 0.2s;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        `;
-        const sourceName = sourceNames[index] || `Source ${index + 1}`;
-        const isActive = index === 0;
-        item.textContent = isActive ? `✓ ${sourceName}` : sourceName;
-        if (isActive) {
-            item.style.color = '#22d3ee';
-            item.style.fontWeight = '600';
-        }
-        item.onmouseover = () => {
-            if (!isActive) item.style.background = 'rgba(255,255,255,0.1)';
-        };
-        item.onmouseout = () => {
-            item.style.background = 'transparent';
-        };
-        item.onclick = () => {
-            const iframe = document.getElementById('streamIframe');
-            iframe.src = url;
-            dropdown.style.display = 'none';
-            // Update active state
-            dropdown.querySelectorAll('div').forEach(el => {
-                el.style.color = 'rgba(255,255,255,0.8)';
-                el.style.fontWeight = '400';
-                el.style.background = 'transparent';
-            });
-            item.style.color = '#22d3ee';
-            item.style.fontWeight = '600';
-            const shortName = sourceName.length > 20 ? sourceName.substring(0, 20) + '...' : sourceName;
-            switchBtn.textContent = `${shortName} ▼`;
-            
-            // Update title to show 1080p
-            const titleEl = document.getElementById('streamTitle');
-            if (url.includes('quality=1080p') || url.includes('q=1080')) {
-                if (!titleEl.innerHTML.includes('1080p')) {
-                    titleEl.innerHTML = titleEl.innerHTML.replace('</span>', '') + ' <span style="color:#22d3ee; font-size:0.7rem; font-weight:400; margin-left:8px;">🎬 1080p</span>';
-                }
-            }
-        };
-        dropdown.appendChild(item);
-    });
-    
-    // Toggle dropdown on button click
-    switchBtn.onclick = (e) => {
-        e.stopPropagation();
-        dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
-    };
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function closeDropdown() {
-        dropdown.style.display = 'none';
-    });
-    
-    // Position the dropdown relative to the top bar
-    const topBarRect = topBar.getBoundingClientRect();
-    dropdown.style.top = `${topBarRect.height}px`;
-    
-    // Insert before close button
-    const closeBtn = topBar.querySelector('.stream-close-btn');
-    topBar.style.position = 'relative';
-    topBar.insertBefore(switchBtn, closeBtn);
-    topBar.appendChild(dropdown);
 }
 
 function closeStream() {
@@ -1680,7 +1341,6 @@ function showRelatedGenres(genreId, type) {
     row.style.display = 'flex';
     row.innerHTML = '';
     try {
-        // Show a few related genre suggestions
         const genreIds = Object.keys(GENRES).filter(id => id != genreId).slice(0, 8);
         genreIds.forEach(id => {
             const chip = document.createElement('div');
@@ -1694,22 +1354,10 @@ function showRelatedGenres(genreId, type) {
     }
 }
 
-/* ============================================================
-   QUICK ACCESS: Direct play for TV show ID 79744 with 1080p
-   You can call this from the console or add a button
-============================================================ */
 function playTVShow79744(season = 1, episode = 1) {
     openStream(79744, 'tv', season, episode);
 }
 
-/* ============================================================
-   BASIC ACCESS DETERRENTS
-   Note: none of this can truly prevent someone from reading page
-   source or opening devtools — the browser always has the raw
-   HTML/JS available to the user. This only removes the obvious
-   shortcuts (right-click menu, Ctrl+U, Ctrl+Shift+I/J/C, F12) so
-   casual attempts are discouraged.
-============================================================ */
 document.addEventListener('contextmenu', (e) => e.preventDefault());
 document.addEventListener('keydown', (e) => {
     const k = e.key.toUpperCase();
@@ -1722,12 +1370,10 @@ document.addEventListener('keydown', (e) => {
 
 function id(elementId) { return document.getElementById(elementId); }
 
-// Also expose the play function globally for easy testing
 window.playTVShow79744 = playTVShow79744;
 
 console.log('🎬 YOUFLEX loaded with 1080p default!');
 console.log('📺 To play TV show 79744, run: playTVShow79744()');
-console.log('📺 Or with specific episode: playTVShow79744(season, episode)');
 console.log('🛡️ Ultimate popup blocker is active!');
 </script>
 </body>
