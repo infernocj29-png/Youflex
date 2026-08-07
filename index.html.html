@@ -106,7 +106,7 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 .cast-avatar-item { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; border: 2px solid rgba(255,255,255,0.2); flex-shrink: 0; background: #202b3c; }
 .cast-avatar-item img { width: 100%; height: 100%; object-fit: cover; }
 
-.hero-actions { display: flex; align-items: center; gap: 12px; margin-bottom: 2rem; }
+.hero-actions { display: flex; align-items: center; gap: 12px; margin-bottom: 2rem; flex-wrap: wrap; }
 .btn-play-now {
     background: var(--gradient-accent); color: #fff; border: none; padding: 12px 32px; border-radius: 30px;
     font-size: 0.95rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px;
@@ -227,12 +227,56 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 .modal-close { position:absolute; top:12px; right:12px; width:36px; height:36px; background:rgba(0,0,0,.6); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.2rem; z-index:10; }
 .modal-body { padding:2rem; }
 
+.modal-layout {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+.modal-poster {
+    flex: 0 0 200px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    background: #121824;
+}
+.modal-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.modal-details {
+    flex: 1;
+    min-width: 0;
+}
+.modal-poster-placeholder {
+    width: 100%;
+    aspect-ratio: 2/3;
+    background: linear-gradient(135deg, #1a2232, #0d111a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 3rem;
+}
+
+@media (max-width: 700px) {
+    .modal-layout {
+        flex-direction: column;
+        align-items: center;
+    }
+    .modal-poster {
+        flex: 0 0 auto;
+        width: 160px;
+    }
+}
+
 .streaming-modal { position:fixed; inset:0; background:#000; z-index:4000; display:none; align-items:stretch; }
 .streaming-modal.show { display:flex; }
 .streaming-inner { width:100%; height:100vh; display:flex; flex-direction:column; background:#000; position:relative; }
-.stream-topbar { position:absolute; top:0; left:0; right:0; z-index:10; padding:14px 18px; background:linear-gradient(to bottom, rgba(0,0,0,.85), transparent); display:flex; align-items:center; justify-content:between; }
-.stream-title { color:#fff; font-size:1rem; font-weight:700; }
-.stream-close-btn { width:38px; height:38px; background:rgba(0,0,0,.7); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.2rem; margin-left:auto; }
+.stream-topbar { position:absolute; top:0; left:0; right:0; z-index:10; padding:14px 18px; background:linear-gradient(to bottom, rgba(0,0,0,.85), transparent); display:flex; align-items:center; justify-content:space-between; }
+.stream-title { color:#fff; font-size:1rem; font-weight:700; flex:1; }
+.stream-close-btn { width:38px; height:38px; background:rgba(0,0,0,.7); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.2rem; margin-left:12px; flex-shrink:0; }
 .stream-video-area { flex:1; background:#000; position:relative; }
 .stream-iframe { position:absolute; inset:0; width:100%; height:100%; border:none; }
 
@@ -259,6 +303,65 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
     font-size: 0.85rem;
 }
 
+.trailer-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+    z-index: 5000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+.trailer-modal.show {
+    display: flex;
+}
+.trailer-modal-content {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+}
+.trailer-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    z-index: 10;
+    border: 1px solid rgba(255,255,255,0.15);
+    transition: 0.2s;
+}
+.trailer-modal-close:hover {
+    background: var(--accent);
+    transform: scale(1.1);
+}
+.trailer-video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+}
+.trailer-video-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
 footer { background:var(--bg2); border-top:1px solid var(--border); text-align:center; padding:1.5rem; color:var(--muted); font-size:0.8rem; }
 
 @media (max-width: 900px) {
@@ -268,6 +371,7 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
     .hero-episodes-card { display: none; }
     .top10-badge { top: 5rem; right: 1.2rem; }
     .content-wrapper { padding: 1rem 1.2rem; }
+    .trailer-modal { padding: 1rem; }
 }
 </style>
 </head>
@@ -411,6 +515,15 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
         </div>
     </div>
 
+    <div class="trailer-modal" id="trailerModal">
+        <div class="trailer-modal-content">
+            <div class="trailer-modal-close" onclick="closeTrailer()"><i class="fa-solid fa-xmark"></i></div>
+            <div class="trailer-video-wrapper">
+                <iframe id="trailerIframe" allowfullscreen allow="autoplay; encrypted-media; fullscreen" referrerpolicy="no-referrer"></iframe>
+            </div>
+        </div>
+    </div>
+
     <div class="streaming-modal" id="streamModal">
         <div class="streaming-inner">
             <div class="stream-topbar" id="streamTopbar">
@@ -466,76 +579,6 @@ let GENRES = {
 let currentHeroItem = null;
 let currentContext = 'movie';
 const WISHLIST_KEY = 'youflex_wishlist';
-
-/* ULTIMATE POPUP BLOCKER */
-(function ultimatePopupBlocker() {
-    window.open = function() { console.warn('[Popup Blocker] Blocked window.open'); return null; };
-    if (window.showModalDialog) window.showModalDialog = function() { return null; };
-    if (window.createPopup) window.createPopup = function() { return null; };
-    if (window.openDialog) window.openDialog = function() { return null; };
-    
-    document.addEventListener('click', function(e) {
-        let target = e.target;
-        while (target && target !== document) {
-            if (target.tagName === 'A') {
-                const href = target.getAttribute('href');
-                const targetAttr = target.getAttribute('target');
-                if (targetAttr === '_blank' || targetAttr === '_new' || targetAttr === '_popup') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return false;
-                }
-                if (href && href.toLowerCase().startsWith('javascript:')) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return false;
-                }
-                break;
-            }
-            target = target.parentElement;
-        }
-    }, true);
-    
-    const originalClick = HTMLElement.prototype.click;
-    HTMLElement.prototype.click = function() {
-        if (this.tagName === 'A') {
-            const target = this.getAttribute('target');
-            if (target === '_blank' || target === '_new') {
-                console.warn('[Popup Blocker] Blocked .click()');
-                return;
-            }
-        }
-        return originalClick.call(this);
-    };
-    
-    window.moveTo = function() {};
-    window.moveBy = function() {};
-    window.resizeTo = function() {};
-    window.resizeBy = function() {};
-    window.focus = function() {};
-    window.blur = function() {};
-    
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            mutation.addedNodes.forEach(function(node) {
-                if (node.nodeType === 1) {
-                    const classNames = node.className || '';
-                    const id = node.id || '';
-                    const popupKeywords = ['popup', 'modal', 'overlay', 'banner', 'ad', 'advertisement', 'promo', 'offer', 'sponsored'];
-                    const shouldRemove = popupKeywords.some(keyword => 
-                        classNames.toLowerCase().includes(keyword) || 
-                        id.toLowerCase().includes(keyword)
-                    );
-                    if (shouldRemove && node.parentNode) {
-                        node.parentNode.removeChild(node);
-                    }
-                }
-            });
-        });
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-    console.log('[Popup Blocker] Activated');
-})();
 
 window.addEventListener('load', () => {
     initApp();
@@ -765,7 +808,9 @@ async function renderHero(item) {
         const trailer = findTrailer(details);
         if (trailer) {
             id('heroTrailerBtn').style.display = 'flex';
-            id('heroTrailerBtn').onclick = () => playTrailer(trailer.key, title);
+            id('heroTrailerBtn').onclick = () => {
+                playTrailer(trailer.key, title);
+            };
         }
     } catch (e) {}
 }
@@ -785,10 +830,26 @@ function findTrailer(details) {
 }
 
 function playTrailer(key, title) {
-    id('streamTitle').innerText = `Trailer — ${title}`;
-    id('streamIframe').src = `https://www.youtube.com/embed/${key}?autoplay=1`;
-    id('streamModal').classList.add('show');
+    const modal = document.getElementById('trailerModal');
+    const iframe = document.getElementById('trailerIframe');
+    iframe.src = `https://www.youtube-nocookie.com/embed/${key}?autoplay=1&rel=0&modestbranding=1&showinfo=0&controls=1&fs=1&iv_load_policy=3`;
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
 }
+
+function closeTrailer() {
+    const modal = document.getElementById('trailerModal');
+    const iframe = document.getElementById('trailerIframe');
+    iframe.src = '';
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+document.getElementById('trailerModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeTrailer();
+    }
+});
 
 async function fetchCast(mediaId, type) {
     const castContainer = id('heroCastList');
@@ -1123,23 +1184,31 @@ async function openDetailsModal(mediaId, type) {
         const dateStr = item.release_date || item.first_air_date || '';
         const isFuture = dateStr && new Date(dateStr) > new Date();
         const dateLabel = dateStr ? formatReleaseDate(dateStr) : 'TBA';
+        const posterPath = item.poster_path ? `${IMAGE_BASE}${item.poster_path}` : null;
 
         modalBody.innerHTML = `
-            <h2 style="font-family:var(--fd); font-size:2.5rem; margin-bottom:0.5rem;">${title}</h2>
-            <p style="color:var(--muted); margin-bottom:1rem; font-size:0.9rem;">
-                ⭐ ${rating} / 10
-                &nbsp;•&nbsp;
-                <i class="fa-regular fa-calendar"></i> ${dateLabel}${isFuture ? ' <span style="color:var(--accent2); font-weight:600;">(Upcoming)</span>' : ''}
-            </p>
-            <p style="line-height:1.6; color:rgba(255,255,255,0.8); margin-bottom:1.5rem;">${overview}</p>
-            <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                ${isFuture
-                    ? `<span class="btn-wishlist" style="cursor:default; opacity:0.7;"><i class="fa-regular fa-clock"></i> Not Released Yet</span>`
-                    : `<button class="btn-play-now" id="modalPlayBtn"><i class="fa-solid fa-play"></i> Watch Stream</button>`}
-                ${trailer ? `<button class="btn-trailer" id="modalTrailerBtn"><i class="fa-brands fa-youtube"></i> Trailer</button>` : ''}
-                <button class="btn-wishlist ${inList ? 'in-list' : ''}" id="modalWishlistBtn">
-                    ${inList ? '<i class="fa-solid fa-check"></i> In My List' : '<i class="fa-solid fa-plus"></i> My Wishlist'}
-                </button>
+            <div class="modal-layout">
+                <div class="modal-poster">
+                    ${posterPath ? `<img src="${posterPath}" alt="${title}">` : `<div class="modal-poster-placeholder"><i class="fa-solid fa-film"></i></div>`}
+                </div>
+                <div class="modal-details">
+                    <h2 style="font-family:var(--fd); font-size:2.2rem; margin-bottom:0.3rem;">${title}</h2>
+                    <p style="color:var(--muted); margin-bottom:0.8rem; font-size:0.9rem;">
+                        ⭐ ${rating} / 10
+                        &nbsp;•&nbsp;
+                        <i class="fa-regular fa-calendar"></i> ${dateLabel}${isFuture ? ' <span style="color:var(--accent2); font-weight:600;">(Upcoming)</span>' : ''}
+                    </p>
+                    <p style="line-height:1.6; color:rgba(255,255,255,0.8); margin-bottom:1.2rem;">${overview}</p>
+                    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:0.5rem;">
+                        ${isFuture
+                            ? `<span class="btn-wishlist" style="cursor:default; opacity:0.7;"><i class="fa-regular fa-clock"></i> Not Released Yet</span>`
+                            : `<button class="btn-play-now" id="modalPlayBtn"><i class="fa-solid fa-play"></i> Watch Stream</button>`}
+                        ${trailer ? `<button class="btn-trailer" id="modalTrailerBtn"><i class="fa-brands fa-youtube"></i> Trailer</button>` : ''}
+                        <button class="btn-wishlist ${inList ? 'in-list' : ''}" id="modalWishlistBtn">
+                            ${inList ? '<i class="fa-solid fa-check"></i> In My List' : '<i class="fa-solid fa-plus"></i> My Wishlist'}
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div class="modal-section-title">Where to Watch</div>
@@ -1152,18 +1221,31 @@ async function openDetailsModal(mediaId, type) {
             <div class="similar-row" id="modalSimilar"></div>
         `;
 
-        if (!isFuture) id('modalPlayBtn').onclick = () => openStream(mediaId, type);
-        if (trailer) id('modalTrailerBtn').onclick = () => playTrailer(trailer.key, title);
-        id('modalWishlistBtn').onclick = (ev) => toggleWishlist(
-            { id: mediaId, type, title, poster_path: item.poster_path, vote_average: item.vote_average },
-            null, ev.currentTarget
-        );
+        if (!isFuture) {
+            const playBtn = id('modalPlayBtn');
+            if (playBtn) playBtn.onclick = () => openStream(mediaId, type);
+        }
+        if (trailer) {
+            const trailerBtn = id('modalTrailerBtn');
+            if (trailerBtn) trailerBtn.onclick = () => {
+                closeModal();
+                playTrailer(trailer.key, title);
+            };
+        }
+        const wishlistBtn = id('modalWishlistBtn');
+        if (wishlistBtn) {
+            wishlistBtn.onclick = (ev) => toggleWishlist(
+                { id: mediaId, type, title, poster_path: item.poster_path, vote_average: item.vote_average },
+                null, ev.currentTarget
+            );
+        }
 
         loadModalProviders(mediaId, type);
         loadModalCast(mediaId, type);
         loadModalSimilar(mediaId, type);
     } catch (e) {
-        modalBody.innerHTML = '<p>Error loading item details.</p>';
+        console.error('Error loading details:', e);
+        modalBody.innerHTML = '<p style="text-align:center; padding:2rem; color:var(--muted);">Error loading item details. Please try again.</p>';
     }
 }
 
@@ -1372,9 +1454,9 @@ function id(elementId) { return document.getElementById(elementId); }
 
 window.playTVShow79744 = playTVShow79744;
 
-console.log('🎬 YOUFLEX loaded with 1080p default!');
+console.log('🎬 YOUFLEX loaded!');
 console.log('📺 To play TV show 79744, run: playTVShow79744()');
-console.log('🛡️ Ultimate popup blocker is active!');
+console.log('🎥 Trailers play directly on the site!');
 </script>
 </body>
 </html>
