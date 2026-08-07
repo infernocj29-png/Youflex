@@ -43,6 +43,10 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 .theme-toggle { position:fixed; bottom:22px; right:22px; width:48px; height:48px; border-radius:50%; background:rgba(18,24,36,0.8); border:1px solid rgba(255,255,255,0.15); color:#fff; font-size:1.1rem; cursor:pointer; z-index:900; backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:center; transition:.25s; }
 .theme-toggle:hover { transform:scale(1.08); background:var(--accent); border-color:var(--accent); }
 
+.back-to-top { position:fixed; bottom:22px; right:82px; width:48px; height:48px; border-radius:50%; background:rgba(18,24,36,0.8); border:1px solid rgba(255,255,255,0.15); color:#fff; font-size:1.05rem; cursor:pointer; z-index:900; backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:center; transition:.25s, opacity .3s, visibility .3s; opacity:0; visibility:hidden; }
+.back-to-top.show { opacity:1; visibility:visible; }
+.back-to-top:hover { transform:scale(1.08); background:var(--accent); border-color:var(--accent); }
+
 /* ============================================================
    HEADER & NAVIGATION
 ============================================================ */
@@ -156,6 +160,15 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 .hero-dot { width: 22px; height: 4px; border-radius: 3px; background: rgba(255,255,255,0.25); cursor: pointer; transition: background 0.25s, width 0.25s; }
 .hero-dot.active { background: var(--accent); width: 34px; }
 
+.hero-category-badge {
+    display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1); color: #fff;
+    padding: 4px 12px; border-radius: 14px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.5px;
+    text-transform: uppercase; margin-bottom: 0.8rem; backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.15);
+}
+.hero-category-badge.trending { color: #ff9f43; }
+.hero-category-badge.upcoming { color: var(--accent2); }
+.hero-category-badge.now-playing { color: #22c55e; }
+
 /* ============================================================
    GRID CONTENT & CATEGORIES
 ============================================================ */
@@ -166,6 +179,27 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 
 .section-heading { font-size: 1.05rem; font-weight: 700; margin: 0 0 0.9rem; display: flex; align-items: center; gap: 8px; }
 
+/* Filter bar */
+.filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.2rem; align-items: center; }
+.filter-select {
+    background: rgba(255,255,255,0.06); color: var(--txt); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px; padding: 7px 12px; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+    font-family: var(--fb); transition: border-color .2s, opacity .2s;
+}
+.filter-select:hover { border-color: var(--accent); }
+.filter-bar.disabled .filter-select { opacity: 0.4; pointer-events: none; }
+.filter-bar-note { font-size: 0.75rem; color: var(--muted); }
+
+/* Recommended-for-you / related-genres rows (reuse similar-card visuals) */
+.reco-section { margin-bottom: 1.8rem; }
+.reco-row { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+.related-genres-row { display: flex; gap: 8px; flex-wrap: wrap; margin: -0.4rem 0 1.2rem; }
+.related-genre-chip {
+    background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.75); border: 1px solid rgba(255,255,255,0.1);
+    padding: 5px 14px; border-radius: 16px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: .2s;
+}
+.related-genre-chip:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
 .movies-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
 .movie-card { background: var(--card); border-radius: 10px; overflow: hidden; cursor: pointer; position: relative; transition: transform 0.25s; border: 1px solid rgba(255,255,255,0.05); }
 .movie-card:hover { transform: translateY(-6px); }
@@ -174,6 +208,8 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
 .movie-info { padding: 10px; }
 .movie-title { font-size: 0.85rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
 .movie-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); }
+.movie-release-date { font-size: 0.7rem; color: var(--muted); margin-top: 3px; display: flex; align-items: center; gap: 4px; }
+.movie-release-date.upcoming-tag { color: var(--accent2); font-weight: 600; }
 
 /* Wishlist heart on poster */
 .wishlist-heart {
@@ -254,6 +290,11 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
         <i class="fa-solid fa-moon"></i>
     </button>
 
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTopBtn" title="Back to Top">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
+
     <!-- Navigation Header -->
     <header class="main-header" id="mainHeader">
         <div class="header-left">
@@ -288,6 +329,7 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
         <div class="top10-badge">TOP<br><span style="font-size: 1rem;">10</span></div>
 
         <div class="hero-main-content">
+            <div class="hero-category-badge" id="heroCategoryBadge" style="display:none;"></div>
             <h1 class="hero-title" id="heroTitle">Loading...</h1>
 
             <div class="hero-tags-bar">
@@ -322,11 +364,20 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
         </div>
     </section>
 
+    <!-- Recommended For You -->
+    <main class="content-wrapper" style="padding-bottom:0;">
+        <div class="reco-section" id="recoSection" style="display:none;">
+            <h2 class="section-heading" id="recoHeading"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent);"></i> Recommended For You</h2>
+            <div class="reco-row" id="recoRow"></div>
+        </div>
+    </main>
+
     <!-- Category Grid Showcase -->
-    <main class="content-wrapper">
+    <main class="content-wrapper" style="padding-top:0;">
         <div class="categories-nav" id="categoryNav">
             <div class="category-item active" onclick="fetchCategory('trending', this)">Trending</div>
             <div class="category-item" onclick="fetchCategory('now-playing', this)">Now Playing</div>
+            <div class="category-item" onclick="fetchCategory('upcoming', this)">Upcoming</div>
             <div class="category-item" onclick="fetchCategory('top-rated', this)">Top Rated</div>
             <div class="category-item" onclick="fetchAnime(this)">Anime</div>
             <div class="category-item" onclick="fetchAnimation(this)">Animation</div>
@@ -336,7 +387,29 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
             <!-- Dynamic genre chips populate here, grouped by current context (movie/tv) -->
         </div>
 
+        <div class="filter-bar" id="filterBar">
+            <select class="filter-select" id="filterSort" onchange="applyFilters()">
+                <option value="popularity.desc">Sort: Popularity</option>
+                <option value="vote_average.desc">Sort: Top Rated</option>
+                <option value="primary_release_date.desc">Sort: Newest</option>
+                <option value="primary_release_date.asc">Sort: Oldest</option>
+            </select>
+            <select class="filter-select" id="filterRating" onchange="applyFilters()">
+                <option value="0">Any Rating</option>
+                <option value="5">5+ Rating</option>
+                <option value="6">6+ Rating</option>
+                <option value="7">7+ Rating</option>
+                <option value="8">8+ Rating</option>
+            </select>
+            <select class="filter-select" id="filterYear" onchange="applyFilters()">
+                <option value="">Any Year</option>
+                <!-- Populated with recent years by JS -->
+            </select>
+            <span class="filter-bar-note" id="filterBarNote" style="display:none;">Filters apply to Movies / TV / Top Rated / Anime / Animation / Genres</span>
+        </div>
+
         <h2 class="section-heading" id="gridHeading" style="display:none;"></h2>
+        <div class="related-genres-row" id="relatedGenresRow" style="display:none;"></div>
         <div class="movies-grid" id="moviesGrid"></div>
         <div id="gridLoader" style="display:none; text-align:center; padding:2rem; color:var(--muted);"><i class="fa-solid fa-spinner fa-spin"></i> Loading more...</div>
         <div id="gridEndMsg" style="display:none; text-align:center; padding:1.5rem; color:var(--muted); font-size:0.85rem;">You've reached the end.</div>
@@ -438,6 +511,7 @@ function initApp() {
     loadGenreChips('movie');
     setupSearchEngine();
     setupThemeToggle();
+    setupBackToTop();
     id('surpriseBtn').addEventListener('click', surpriseMe);
 
     const hero = id('heroSection');
@@ -527,17 +601,31 @@ let heroItems = [];
 let heroIndex = 0;
 let heroTimer = null;
 const HERO_ROTATE_MS = 8000;
-const HERO_SLIDE_COUNT = 5;
 
 async function fetchHeroBanner() {
     try {
-        const res = await tmdb('/trending/all/day');
-        const data = await res.json();
-        heroItems = (data.results || [])
-            .filter(r => r.media_type !== 'person' && r.backdrop_path)
-            .slice(0, HERO_SLIDE_COUNT);
+        const [trendingRes, upcomingRes, nowPlayingRes] = await Promise.all([
+            tmdb('/trending/all/day'),
+            tmdb('/movie/upcoming'),
+            tmdb('/movie/now_playing')
+        ]);
+        const [trendingData, upcomingData, nowPlayingData] = await Promise.all([
+            trendingRes.json(), upcomingRes.json(), nowPlayingRes.json()
+        ]);
+
+        const tag = (arr, category, mediaType) => (arr || [])
+            .filter(r => r.backdrop_path && r.media_type !== 'person')
+            .slice(0, 3)
+            .map(r => ({ ...r, media_type: mediaType || r.media_type, heroCategory: category }));
+
+        heroItems = [
+            ...tag(trendingData.results, 'trending'),
+            ...tag(upcomingData.results, 'upcoming', 'movie'),
+            ...tag(nowPlayingData.results, 'now-playing', 'movie')
+        ];
 
         if (heroItems.length > 0) {
+            heroIndex = 0;
             currentHeroItem = heroItems[0];
             renderHeroDots();
             renderHero(currentHeroItem);
@@ -547,6 +635,12 @@ async function fetchHeroBanner() {
         console.error("Error loading hero item:", e);
     }
 }
+
+const HERO_CATEGORY_LABELS = {
+    'trending': '<i class="fa-solid fa-fire"></i> Trending Now',
+    'upcoming': '<i class="fa-solid fa-calendar-days"></i> Upcoming',
+    'now-playing': '<i class="fa-solid fa-clapperboard"></i> Latest Release'
+};
 
 function renderHeroDots() {
     const dotsEl = id('heroDots');
@@ -584,9 +678,10 @@ async function renderHero(item) {
     const title = item.title || item.name || 'Featured Title';
     const overview = item.overview || 'No overview description available.';
     const backdrop = item.backdrop_path ? `${HERO_IMAGE_BASE}${item.backdrop_path}` : '';
-    const dateStr = item.release_date || item.first_air_date || '2024';
-    const year = dateStr.split('-')[0];
+    const dateStr = item.release_date || item.first_air_date || '';
+    const year = dateStr ? dateStr.split('-')[0] : 'TBA';
     const matchScore = Math.round((item.vote_average || 8.5) * 10);
+    const isFuture = dateStr && new Date(dateStr) > new Date();
 
     const genreNames = (item.genre_ids || [])
         .slice(0, 3)
@@ -594,9 +689,18 @@ async function renderHero(item) {
         .filter(Boolean)
         .join(', ') || (isTV ? 'TV Series' : 'Movie');
 
+    const badge = id('heroCategoryBadge');
+    if (item.heroCategory && HERO_CATEGORY_LABELS[item.heroCategory]) {
+        badge.style.display = 'inline-flex';
+        badge.className = 'hero-category-badge ' + item.heroCategory;
+        badge.innerHTML = HERO_CATEGORY_LABELS[item.heroCategory];
+    } else {
+        badge.style.display = 'none';
+    }
+
     id('heroTitle').innerText = title;
     id('heroOverview').innerText = overview;
-    id('heroYear').innerText = year;
+    id('heroYear').innerText = isFuture ? `${formatReleaseDate(dateStr)} (Upcoming)` : year;
     id('heroMatch').innerText = `${matchScore}% Match`;
     id('heroGenres').innerText = genreNames;
 
@@ -604,6 +708,7 @@ async function renderHero(item) {
         id('heroSection').style.backgroundImage = `url('${backdrop}')`;
     }
 
+    id('heroPlayBtn').style.display = isFuture ? 'none' : 'flex';
     id('heroPlayBtn').onclick = () => openStream(item.id, type);
     updateWishlistButton(id('heroWishlistBtn'), item.id, type, title, item.poster_path);
     id('heroWishlistBtn').onclick = () => toggleWishlist({ id: item.id, type, title, poster_path: item.poster_path, vote_average: item.vote_average }, null, id('heroWishlistBtn'));
@@ -624,6 +729,13 @@ async function renderHero(item) {
             id('heroTrailerBtn').onclick = () => playTrailer(trailer.key, title);
         }
     } catch (e) { /* trailer is optional, fail quietly */ }
+}
+
+function formatReleaseDate(dateStr) {
+    if (!dateStr) return 'TBA';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return 'TBA';
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 function findTrailer(details) {
@@ -692,15 +804,55 @@ async function fetchEpisodes(tvId) {
    gridState tracks the active TMDB query so we can keep pulling
    subsequent pages as the user scrolls, instead of a fixed page.
 ============================================================ */
-const gridState = { path: null, params: {}, page: 1, forcedType: null, loading: false, done: false };
+const gridState = { path: null, params: {}, page: 1, forcedType: null, filterable: false, loading: false, done: false };
 
-function startGridQuery(path, params, forcedType) {
+function populateYearFilter() {
+    const sel = id('filterYear');
+    const thisYear = new Date().getFullYear();
+    for (let y = thisYear; y >= thisYear - 40; y--) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        sel.appendChild(opt);
+    }
+}
+
+function currentFilterParams() {
+    const params = { sort_by: id('filterSort').value };
+    const rating = parseFloat(id('filterRating').value);
+    if (rating > 0) params['vote_average.gte'] = rating;
+    const year = id('filterYear').value;
+    if (year) {
+        params['primary_release_year'] = year;
+        params['first_air_date_year'] = year;
+    }
+    return params;
+}
+
+function setFilterBarEnabled(enabled) {
+    id('filterBar').classList.toggle('disabled', !enabled);
+    id('filterBarNote').style.display = enabled ? 'none' : 'block';
+}
+
+function applyFilters() {
+    if (!gridState.filterable || !gridState.path) return;
+    gridState.params = { ...gridState.baseParams, ...currentFilterParams() };
+    gridState.page = 1;
+    gridState.done = false;
+    id('gridEndMsg').style.display = 'none';
+    loadGridPage(false);
+}
+
+function startGridQuery(path, params, forcedType, filterable) {
     gridState.path = path;
-    gridState.params = params || {};
+    gridState.baseParams = params || {};
+    gridState.filterable = !!filterable;
+    gridState.params = filterable ? { ...gridState.baseParams, ...currentFilterParams() } : { ...gridState.baseParams };
     gridState.page = 1;
     gridState.forcedType = forcedType || null;
     gridState.loading = false;
     gridState.done = false;
+    setFilterBarEnabled(!!filterable);
     id('gridEndMsg').style.display = 'none';
     loadGridPage(false);
 }
@@ -747,24 +899,32 @@ async function fetchCategory(category, element) {
         element.classList.add('active');
     }
     id('gridHeading').style.display = 'none';
+    id('relatedGenresRow').style.display = 'none';
 
     let path = '/trending/all/week';
     let params = {};
     let forcedType = null;
-    if (category === 'tv') { path = '/discover/tv'; forcedType = 'tv'; }
-    if (category === 'movie') { path = '/discover/movie'; forcedType = 'movie'; }
+    let filterable = false;
+    if (category === 'tv') { path = '/discover/tv'; forcedType = 'tv'; filterable = true; }
+    if (category === 'movie') { path = '/discover/movie'; forcedType = 'movie'; filterable = true; }
     if (category === 'upcoming') { path = '/movie/upcoming'; forcedType = 'movie'; }
     if (category === 'now-playing') { path = '/movie/now_playing'; forcedType = 'movie'; }
-    if (category === 'top-rated') { path = `/${currentContext}/top_rated`; forcedType = currentContext; }
+    if (category === 'top-rated') {
+        path = `/discover/${currentContext}`;
+        params = { 'vote_count.gte': 200 };
+        forcedType = currentContext;
+        filterable = true;
+    }
 
-    startGridQuery(path, params, forcedType);
+    startGridQuery(path, params, forcedType, filterable);
 }
 
 function fetchByGenre(genreId, type, element) {
     document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
     if (element) element.classList.add('active');
     id('gridHeading').style.display = 'none';
-    startGridQuery(`/discover/${type}`, { with_genres: genreId }, type);
+    startGridQuery(`/discover/${type}`, { with_genres: genreId }, type, true);
+    showRelatedGenres(genreId, type);
 }
 
 async function surpriseMe() {
@@ -796,6 +956,9 @@ function renderGrid(items, append, forcedType) {
         const rating = item.vote_average ? item.vote_average.toFixed(1) : 'N/A';
         const type = forcedType || item.media_type || (item.title ? 'movie' : 'tv');
         const inList = isInWishlist(item.id, type);
+        const dateStr = item.release_date || item.first_air_date || '';
+        const isFuture = dateStr && new Date(dateStr) > new Date();
+        const dateLabel = dateStr ? formatReleaseDate(dateStr) : '';
 
         const card = document.createElement('div');
         card.className = 'movie-card';
@@ -810,6 +973,7 @@ function renderGrid(items, append, forcedType) {
                     <span>⭐ ${rating}</span>
                     <span style="text-transform:uppercase;">${type}</span>
                 </div>
+                ${dateLabel ? `<div class="movie-release-date ${isFuture ? 'upcoming-tag' : ''}"><i class="fa-regular fa-calendar"></i> ${dateLabel}${isFuture ? ' (Upcoming)' : ''}</div>` : ''}
             </div>
         `;
         card.onclick = () => openDetailsModal(item.id, type);
@@ -923,13 +1087,22 @@ async function openDetailsModal(mediaId, type) {
         const rating = item.vote_average ? item.vote_average.toFixed(1) : 'N/A';
         const trailer = findTrailer(item);
         const inList = isInWishlist(mediaId, type);
+        const dateStr = item.release_date || item.first_air_date || '';
+        const isFuture = dateStr && new Date(dateStr) > new Date();
+        const dateLabel = dateStr ? formatReleaseDate(dateStr) : 'TBA';
 
         modalBody.innerHTML = `
             <h2 style="font-family:var(--fd); font-size:2.5rem; margin-bottom:0.5rem;">${title}</h2>
-            <p style="color:var(--muted); margin-bottom:1rem; font-size:0.9rem;">Rating: ⭐ ${rating} / 10</p>
+            <p style="color:var(--muted); margin-bottom:1rem; font-size:0.9rem;">
+                ⭐ ${rating} / 10
+                &nbsp;•&nbsp;
+                <i class="fa-regular fa-calendar"></i> ${dateLabel}${isFuture ? ' <span style="color:var(--accent2); font-weight:600;">(Upcoming)</span>' : ''}
+            </p>
             <p style="line-height:1.6; color:rgba(255,255,255,0.8); margin-bottom:1.5rem;">${overview}</p>
             <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                <button class="btn-play-now" id="modalPlayBtn"><i class="fa-solid fa-play"></i> Watch Stream</button>
+                ${isFuture
+                    ? `<span class="btn-wishlist" style="cursor:default; opacity:0.7;"><i class="fa-regular fa-clock"></i> Not Released Yet</span>`
+                    : `<button class="btn-play-now" id="modalPlayBtn"><i class="fa-solid fa-play"></i> Watch Stream</button>`}
                 ${trailer ? `<button class="btn-trailer" id="modalTrailerBtn"><i class="fa-brands fa-youtube"></i> Trailer</button>` : ''}
                 <button class="btn-wishlist ${inList ? 'in-list' : ''}" id="modalWishlistBtn">
                     ${inList ? '<i class="fa-solid fa-check"></i> In My List' : '<i class="fa-solid fa-plus"></i> My Wishlist'}
@@ -946,7 +1119,7 @@ async function openDetailsModal(mediaId, type) {
             <div class="similar-row" id="modalSimilar"></div>
         `;
 
-        id('modalPlayBtn').onclick = () => openStream(mediaId, type);
+        if (!isFuture) id('modalPlayBtn').onclick = () => openStream(mediaId, type);
         if (trailer) id('modalTrailerBtn').onclick = () => playTrailer(trailer.key, title);
         id('modalWishlistBtn').onclick = (ev) => toggleWishlist(
             { id: mediaId, type, title, poster_path: item.poster_path, vote_average: item.vote_average },
@@ -1041,6 +1214,16 @@ function handleHeaderScroll() {
     } else {
         header.classList.remove('scrolled');
     }
+}
+
+function setupBackToTop() {
+    const btn = id('backToTopBtn');
+    window.addEventListener('scroll', () => {
+        btn.classList.toggle('show', window.scrollY > 500);
+    });
+    btn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
 }
 
 function setupThemeToggle() {
