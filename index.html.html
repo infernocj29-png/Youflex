@@ -302,7 +302,6 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
     font-size: 0.85rem;
 }
 
-/* Trailer Modal - Enhanced for YouTube */
 .trailer-modal {
     position: fixed;
     inset: 0;
@@ -585,7 +584,34 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
 </div>
 
 <script>
-const API_BASE = window.location.origin + '/api';
+// ============ SMART API BASE URL DETECTION ============
+// This automatically detects if you're running locally or on Render
+const API_BASE = (() => {
+    // Get the current origin (e.g., https://youflex.onrender.com or http://localhost:3000)
+    const origin = window.location.origin;
+    
+    // Check if we're in production (not localhost)
+    const isProduction = window.location.hostname !== 'localhost' && 
+                        window.location.hostname !== '127.0.0.1' &&
+                        !window.location.hostname.startsWith('192.168.') &&
+                        !window.location.hostname.startsWith('10.');
+    
+    // In production, API is on the same domain
+    // In development, use localhost:3000
+    if (isProduction) {
+        console.log('🏭 Production mode detected - using:', origin + '/api');
+        return origin + '/api';
+    } else {
+        console.log('💻 Development mode detected - using: http://localhost:3000/api');
+        return 'http://localhost:3000/api';
+    }
+})();
+
+console.log('🚀 YOUFLEX API Base URL:', API_BASE);
+console.log('📍 Environment:', window.location.hostname === 'localhost' ? 'Development' : 'Production');
+console.log('📍 Current URL:', window.location.href);
+
+// ============ CONFIGURATION ============
 const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 const HERO_IMAGE_BASE = 'https://image.tmdb.org/t/p/original';
 const PROVIDER_LOGO_BASE = 'https://image.tmdb.org/t/p/w92';
@@ -595,30 +621,56 @@ let currentHeroItem = null;
 let currentContext = 'movie';
 const WISHLIST_KEY = 'youflex_wishlist';
 
-// ============ API HELPER ============
+// ============ API HELPER WITH BETTER ERROR HANDLING ============
 async function apiFetch(endpoint, options = {}) {
     try {
-        const response = await fetch(`${API_BASE}${endpoint}`, {
+        const url = `${API_BASE}${endpoint}`;
+        console.log(`📡 API Request: ${url}`);
+        
+        const response = await fetch(url, {
             ...options,
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 ...(options.headers || {})
             }
         });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
         const data = await response.json();
         if (!data.success) {
             throw new Error(data.error || 'API request failed');
         }
         return data.data;
     } catch (error) {
-        console.error('API Error:', error);
+        console.error('❌ API Error:', error.message);
+        console.error('❌ Endpoint:', endpoint);
+        console.error('❌ URL:', `${API_BASE}${endpoint}`);
         throw error;
+    }
+}
+
+// ============ TEST API CONNECTION ============
+async function testAPIConnection() {
+    try {
+        console.log('🔍 Testing API connection...');
+        const response = await fetch(`${API_BASE}/health`);
+        const data = await response.json();
+        console.log('✅ API Connection successful!', data);
+        return true;
+    } catch (error) {
+        console.error('❌ API Connection failed:', error.message);
+        console.log('⚠️ Make sure the server is running');
+        console.log('⚠️ API URL:', API_BASE);
+        return false;
     }
 }
 
 // ============ YOUTUBE API INTEGRATION ============
 
-// Play YouTube video directly in the trailer modal
 function playYouTubeVideo(videoId, title, channelTitle, viewCount, likeCount) {
     if (!videoId) {
         console.error('No video ID provided');
@@ -633,7 +685,6 @@ function playYouTubeVideo(videoId, title, channelTitle, viewCount, likeCount) {
     const viewsEl = document.getElementById('trailerViews');
     const likesEl = document.getElementById('trailerLikes');
     
-    // Update trailer info
     if (title) {
         titleEl.textContent = title;
         info.style.display = 'flex';
@@ -648,14 +699,12 @@ function playYouTubeVideo(videoId, title, channelTitle, viewCount, likeCount) {
         likesEl.innerHTML = `<i class="fa-regular fa-thumbs-up"></i> ${formatNumber(likeCount)}`;
     }
     
-    // Use no-cookie domain for better privacy and to avoid errors
     const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&showinfo=0&controls=1&fs=1&iv_load_policy=3&enablejsapi=1`;
     iframe.src = embedUrl;
     modal.classList.add('show');
     document.body.style.overflow = 'hidden';
 }
 
-// Search YouTube for trailers
 async function searchYouTubeTrailer(title, year, type = 'movie') {
     try {
         const query = `${title} ${year} ${type} official trailer`;
@@ -663,7 +712,6 @@ async function searchYouTubeTrailer(title, year, type = 'movie') {
         const data = await response.json();
         
         if (data.success && data.data && data.data.items && data.data.items.length > 0) {
-            // Prefer videos with "official" in title
             const official = data.data.items.find(v => 
                 v.title.toLowerCase().includes('official') || 
                 v.title.toLowerCase().includes('trailer')
@@ -677,7 +725,6 @@ async function searchYouTubeTrailer(title, year, type = 'movie') {
     }
 }
 
-// Get YouTube video details
 async function getYouTubeVideoDetails(videoId) {
     try {
         const response = await fetch(`${API_BASE}/youtube/video/${videoId}`);
@@ -689,7 +736,6 @@ async function getYouTubeVideoDetails(videoId) {
     }
 }
 
-// Format numbers (e.g., 1000000 -> 1M)
 function formatNumber(num) {
     if (!num) return '0';
     num = parseInt(num);
@@ -698,14 +744,11 @@ function formatNumber(num) {
     return num.toString();
 }
 
-// Enhanced play trailer with YouTube API
 async function playEnhancedTrailer(tmdbId, title, year, type = 'movie') {
     try {
-        // First try to get trailer from TMDB via our API
         const tmdbTrailer = await apiFetch(`/trailer/${type}/${tmdbId}`);
         
         if (tmdbTrailer && tmdbTrailer.key) {
-            // Try to get YouTube details for better info
             try {
                 const details = await getYouTubeVideoDetails(tmdbTrailer.key);
                 if (details) {
@@ -718,19 +761,15 @@ async function playEnhancedTrailer(tmdbId, title, year, type = 'movie') {
                     );
                     return;
                 }
-            } catch (e) {
-                // Fallback to basic playback
-            }
+            } catch (e) {}
             playYouTubeVideo(tmdbTrailer.key, tmdbTrailer.name);
             return;
         }
         
-        // If no TMDB trailer, search YouTube
         const searchQuery = `${title} ${year} official trailer`;
         const youtubeResult = await searchYouTubeTrailer(title, year, type);
         
         if (youtubeResult) {
-            // Get full video details
             const details = await getYouTubeVideoDetails(youtubeResult.id);
             playYouTubeVideo(
                 youtubeResult.id,
@@ -749,8 +788,17 @@ async function playEnhancedTrailer(tmdbId, title, year, type = 'movie') {
 }
 
 // ============ INITIALIZATION ============
-window.addEventListener('load', () => {
-    initApp();
+window.addEventListener('load', async () => {
+    console.log('🎬 YOUFLEX App Initializing...');
+    console.log('📡 API Base URL:', API_BASE);
+    
+    // Test API connection first
+    const connected = await testAPIConnection();
+    if (!connected) {
+        console.warn('⚠️ API connection failed. Some features may not work.');
+    }
+    
+    await initApp();
     window.addEventListener('scroll', handleHeaderScroll);
     window.addEventListener('scroll', maybeLoadMoreGrid);
     window.addEventListener('online', updateNetworkStatus);
@@ -758,18 +806,22 @@ window.addEventListener('load', () => {
 });
 
 async function initApp() {
-    await loadAllGenres();
-    await fetchHeroBanner();
-    await fetchCategory('trending');
-    await loadGenreChips('movie');
-    setupSearchEngine();
-    setupThemeToggle();
-    setupBackToTop();
-    id('surpriseBtn').addEventListener('click', surpriseMe);
-    populateYearFilter();
-    const hero = id('heroSection');
-    hero.addEventListener('mouseenter', () => { if (heroTimer) clearInterval(heroTimer); });
-    hero.addEventListener('mouseleave', startHeroRotation);
+    try {
+        await loadAllGenres();
+        await fetchHeroBanner();
+        await fetchCategory('trending');
+        await loadGenreChips('movie');
+        setupSearchEngine();
+        setupThemeToggle();
+        setupBackToTop();
+        id('surpriseBtn').addEventListener('click', surpriseMe);
+        populateYearFilter();
+        const hero = id('heroSection');
+        hero.addEventListener('mouseenter', () => { if (heroTimer) clearInterval(heroTimer); });
+        hero.addEventListener('mouseleave', startHeroRotation);
+    } catch (error) {
+        console.error('Error initializing app:', error);
+    }
 }
 
 // ============ GENRE FUNCTIONS ============
@@ -777,6 +829,7 @@ async function loadAllGenres() {
     try {
         const data = await apiFetch('/genres/all');
         GENRES = data;
+        console.log('✅ Genres loaded:', Object.keys(GENRES).length);
     } catch (e) {
         console.error('Genre load failed:', e);
         GENRES = {};
@@ -951,7 +1004,6 @@ async function renderHero(item) {
         id('heroEpisodesCard').style.display = 'none';
     }
 
-    // Use enhanced trailer with YouTube API
     id('heroTrailerBtn').style.display = 'flex';
     id('heroTrailerBtn').onclick = () => {
         const title = item.title || item.name;
@@ -1558,13 +1610,17 @@ document.addEventListener('keydown', (e) => {
 // ============ UTILITY ============
 function id(elementId) { return document.getElementById(elementId); }
 
+// Expose functions to window for debugging
 window.playTVShow79744 = playTVShow79744;
 window.playYouTubeVideo = playYouTubeVideo;
 window.playEnhancedTrailer = playEnhancedTrailer;
+window.API_BASE = API_BASE;
+window.testAPIConnection = testAPIConnection;
 
-console.log('🎬 YOUFLEX loaded with YouTube API v3!');
+console.log('🎬 YOUFLEX loaded successfully!');
+console.log('📍 API Base URL:', API_BASE);
 console.log('📺 To play TV show 79744, run: playTVShow79744()');
-console.log('🎥 Enhanced trailers now use YouTube API v3');
+console.log('🔍 To test API connection, run: testAPIConnection()');
 </script>
 </body>
 </html>
