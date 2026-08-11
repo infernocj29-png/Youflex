@@ -302,6 +302,7 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
     font-size: 0.85rem;
 }
 
+/* Trailer Modal - Enhanced for YouTube */
 .trailer-modal {
     position: fixed;
     inset: 0;
@@ -359,6 +360,30 @@ body { background:var(--bg); color:var(--txt); font-family:var(--fb); min-height
     width: 100%;
     height: 100%;
     border: none;
+}
+.trailer-info {
+    padding: 12px 20px;
+    background: rgba(0,0,0,0.9);
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.trailer-info .title {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+.trailer-info .channel {
+    color: #aaa;
+    font-size: 0.85rem;
+}
+.trailer-info .stats {
+    color: #aaa;
+    font-size: 0.8rem;
+    display: flex;
+    gap: 12px;
 }
 
 footer { background:var(--bg2); border-top:1px solid var(--border); text-align:center; padding:1.5rem; color:var(--muted); font-size:0.8rem; }
@@ -521,6 +546,14 @@ footer { background:var(--bg2); border-top:1px solid var(--border); text-align:c
             <div class="trailer-video-wrapper">
                 <iframe id="trailerIframe" allowfullscreen allow="autoplay; encrypted-media; fullscreen" referrerpolicy="no-referrer"></iframe>
             </div>
+            <div class="trailer-info" id="trailerInfo" style="display:none;">
+                <span class="title" id="trailerTitle">Trailer</span>
+                <span class="channel" id="trailerChannel"><i class="fa-brands fa-youtube"></i> YouTube</span>
+                <span class="stats">
+                    <span id="trailerViews"><i class="fa-regular fa-eye"></i> --</span>
+                    <span id="trailerLikes"><i class="fa-regular fa-thumbs-up"></i> --</span>
+                </span>
+            </div>
         </div>
     </div>
 
@@ -562,7 +595,7 @@ let currentHeroItem = null;
 let currentContext = 'movie';
 const WISHLIST_KEY = 'youflex_wishlist';
 
-// API Helper
+// ============ API HELPER ============
 async function apiFetch(endpoint, options = {}) {
     try {
         const response = await fetch(`${API_BASE}${endpoint}`, {
@@ -583,6 +616,139 @@ async function apiFetch(endpoint, options = {}) {
     }
 }
 
+// ============ YOUTUBE API INTEGRATION ============
+
+// Play YouTube video directly in the trailer modal
+function playYouTubeVideo(videoId, title, channelTitle, viewCount, likeCount) {
+    if (!videoId) {
+        console.error('No video ID provided');
+        return;
+    }
+    
+    const modal = document.getElementById('trailerModal');
+    const iframe = document.getElementById('trailerIframe');
+    const info = document.getElementById('trailerInfo');
+    const titleEl = document.getElementById('trailerTitle');
+    const channelEl = document.getElementById('trailerChannel');
+    const viewsEl = document.getElementById('trailerViews');
+    const likesEl = document.getElementById('trailerLikes');
+    
+    // Update trailer info
+    if (title) {
+        titleEl.textContent = title;
+        info.style.display = 'flex';
+    }
+    if (channelTitle) {
+        channelEl.innerHTML = `<i class="fa-brands fa-youtube"></i> ${channelTitle}`;
+    }
+    if (viewCount) {
+        viewsEl.innerHTML = `<i class="fa-regular fa-eye"></i> ${formatNumber(viewCount)}`;
+    }
+    if (likeCount) {
+        likesEl.innerHTML = `<i class="fa-regular fa-thumbs-up"></i> ${formatNumber(likeCount)}`;
+    }
+    
+    // Use no-cookie domain for better privacy and to avoid errors
+    const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&showinfo=0&controls=1&fs=1&iv_load_policy=3&enablejsapi=1`;
+    iframe.src = embedUrl;
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+// Search YouTube for trailers
+async function searchYouTubeTrailer(title, year, type = 'movie') {
+    try {
+        const query = `${title} ${year} ${type} official trailer`;
+        const response = await fetch(`${API_BASE}/youtube/search?q=${encodeURIComponent(query)}&maxResults=5`);
+        const data = await response.json();
+        
+        if (data.success && data.data && data.data.items && data.data.items.length > 0) {
+            // Prefer videos with "official" in title
+            const official = data.data.items.find(v => 
+                v.title.toLowerCase().includes('official') || 
+                v.title.toLowerCase().includes('trailer')
+            );
+            return official || data.data.items[0];
+        }
+        return null;
+    } catch (error) {
+        console.error('YouTube search error:', error);
+        return null;
+    }
+}
+
+// Get YouTube video details
+async function getYouTubeVideoDetails(videoId) {
+    try {
+        const response = await fetch(`${API_BASE}/youtube/video/${videoId}`);
+        const data = await response.json();
+        return data.success ? data.data : null;
+    } catch (error) {
+        console.error('YouTube video details error:', error);
+        return null;
+    }
+}
+
+// Format numbers (e.g., 1000000 -> 1M)
+function formatNumber(num) {
+    if (!num) return '0';
+    num = parseInt(num);
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return num.toString();
+}
+
+// Enhanced play trailer with YouTube API
+async function playEnhancedTrailer(tmdbId, title, year, type = 'movie') {
+    try {
+        // First try to get trailer from TMDB via our API
+        const tmdbTrailer = await apiFetch(`/trailer/${type}/${tmdbId}`);
+        
+        if (tmdbTrailer && tmdbTrailer.key) {
+            // Try to get YouTube details for better info
+            try {
+                const details = await getYouTubeVideoDetails(tmdbTrailer.key);
+                if (details) {
+                    playYouTubeVideo(
+                        tmdbTrailer.key,
+                        details.title || tmdbTrailer.name,
+                        details.channelTitle,
+                        details.viewCount,
+                        details.likeCount
+                    );
+                    return;
+                }
+            } catch (e) {
+                // Fallback to basic playback
+            }
+            playYouTubeVideo(tmdbTrailer.key, tmdbTrailer.name);
+            return;
+        }
+        
+        // If no TMDB trailer, search YouTube
+        const searchQuery = `${title} ${year} official trailer`;
+        const youtubeResult = await searchYouTubeTrailer(title, year, type);
+        
+        if (youtubeResult) {
+            // Get full video details
+            const details = await getYouTubeVideoDetails(youtubeResult.id);
+            playYouTubeVideo(
+                youtubeResult.id,
+                details?.title || youtubeResult.title,
+                details?.channelTitle || youtubeResult.channelTitle,
+                details?.viewCount,
+                details?.likeCount
+            );
+        } else {
+            alert('No trailer found for this title.');
+        }
+    } catch (error) {
+        console.error('Enhanced trailer error:', error);
+        alert('Error loading trailer. Please try again.');
+    }
+}
+
+// ============ INITIALIZATION ============
 window.addEventListener('load', () => {
     initApp();
     window.addEventListener('scroll', handleHeaderScroll);
@@ -606,6 +772,7 @@ async function initApp() {
     hero.addEventListener('mouseleave', startHeroRotation);
 }
 
+// ============ GENRE FUNCTIONS ============
 async function loadAllGenres() {
     try {
         const data = await apiFetch('/genres/all');
@@ -643,6 +810,7 @@ function toggleGenreRow() {
         : 'Genres <i class="fa-solid fa-chevron-up" style="font-size:0.65rem; margin-left:2px;"></i>';
 }
 
+// ============ CATEGORY FUNCTIONS ============
 async function fetchAnime(element) {
     document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
     if (element) element.classList.add('active');
@@ -677,6 +845,7 @@ function goHome(element) {
     fetchCategory('trending');
 }
 
+// ============ HERO BANNER ============
 let heroItems = [];
 let heroIndex = 0;
 let heroTimer = null;
@@ -782,20 +951,13 @@ async function renderHero(item) {
         id('heroEpisodesCard').style.display = 'none';
     }
 
-    // Fetch trailer
-    try {
-        const trailerData = await apiFetch(`/trailer/${type}/${item.id}`);
-        if (trailerData && trailerData.key) {
-            id('heroTrailerBtn').style.display = 'flex';
-            id('heroTrailerBtn').onclick = () => {
-                playTrailer(trailerData.key, title);
-            };
-        } else {
-            id('heroTrailerBtn').style.display = 'none';
-        }
-    } catch (e) {
-        id('heroTrailerBtn').style.display = 'none';
-    }
+    // Use enhanced trailer with YouTube API
+    id('heroTrailerBtn').style.display = 'flex';
+    id('heroTrailerBtn').onclick = () => {
+        const title = item.title || item.name;
+        const year = (item.release_date || item.first_air_date || '').split('-')[0];
+        playEnhancedTrailer(item.id, title, year, type);
+    };
 }
 
 function formatReleaseDate(dateStr) {
@@ -805,22 +967,13 @@ function formatReleaseDate(dateStr) {
     return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
-function playTrailer(key, title) {
-    const modal = document.getElementById('trailerModal');
-    const iframe = document.getElementById('trailerIframe');
-    // Try multiple formats for better compatibility
-    const embedUrl = `https://www.youtube-nocookie.com/embed/${key}?autoplay=1&rel=0&modestbranding=1&showinfo=0&controls=1&fs=1&iv_load_policy=3&enablejsapi=1`;
-    iframe.src = embedUrl;
-    modal.classList.add('show');
-    document.body.style.overflow = 'hidden';
-}
-
 function closeTrailer() {
     const modal = document.getElementById('trailerModal');
     const iframe = document.getElementById('trailerIframe');
     iframe.src = '';
     modal.classList.remove('show');
     document.body.style.overflow = '';
+    document.getElementById('trailerInfo').style.display = 'none';
 }
 
 document.getElementById('trailerModal').addEventListener('click', function(e) {
@@ -829,6 +982,7 @@ document.getElementById('trailerModal').addEventListener('click', function(e) {
     }
 });
 
+// ============ CAST & EPISODES ============
 async function fetchCast(mediaId, type) {
     const castContainer = id('heroCastList');
     castContainer.innerHTML = '';
@@ -873,6 +1027,7 @@ async function fetchEpisodes(tvId) {
     }
 }
 
+// ============ GRID SYSTEM ============
 const gridState = { path: null, params: {}, page: 1, forcedType: null, filterable: false, loading: false, done: false };
 
 function populateYearFilter() {
@@ -996,6 +1151,7 @@ async function fetchByGenre(genreId, type, element) {
     showRelatedGenres(genreId, type);
 }
 
+// ============ SURPRISE ME ============
 async function surpriseMe() {
     try {
         const data = await apiFetch('/trending');
@@ -1009,6 +1165,7 @@ async function surpriseMe() {
     }
 }
 
+// ============ RENDER GRID ============
 function renderGrid(items, append, forcedType) {
     const grid = id('moviesGrid');
     if (!append) grid.innerHTML = '';
@@ -1054,6 +1211,7 @@ function renderGrid(items, append, forcedType) {
     });
 }
 
+// ============ WISHLIST ============
 function getWishlist() {
     try { return JSON.parse(localStorage.getItem(WISHLIST_KEY)) || []; }
     catch (e) { return []; }
@@ -1097,6 +1255,7 @@ function showWishlist(element) {
     renderGrid(getWishlist());
 }
 
+// ============ SEARCH ENGINE ============
 function setupSearchEngine() {
     const input = id('searchInput');
     const dropdown = id('autocompleteDropdown');
@@ -1137,6 +1296,7 @@ function setupSearchEngine() {
     });
 }
 
+// ============ DETAILS MODAL ============
 async function openDetailsModal(mediaId, type) {
     const modal = id('detailsModal');
     const modalBody = id('modalBody');
@@ -1157,13 +1317,7 @@ async function openDetailsModal(mediaId, type) {
         const isFuture = dateStr && new Date(dateStr) > new Date();
         const dateLabel = dateStr ? formatReleaseDate(dateStr) : 'TBA';
         const posterPath = item.poster_path ? `${IMAGE_BASE}${item.poster_path}` : null;
-
-        // Get trailer
-        let trailerKey = null;
-        try {
-            const trailerData = await apiFetch(`/trailer/${type}/${mediaId}`);
-            if (trailerData && trailerData.key) trailerKey = trailerData.key;
-        } catch (e) {}
+        const year = dateStr ? dateStr.split('-')[0] : '';
 
         modalBody.innerHTML = `
             <div class="modal-layout">
@@ -1182,7 +1336,7 @@ async function openDetailsModal(mediaId, type) {
                         ${isFuture
                             ? `<span class="btn-wishlist" style="cursor:default; opacity:0.7;"><i class="fa-regular fa-clock"></i> Not Released Yet</span>`
                             : `<button class="btn-play-now" id="modalPlayBtn"><i class="fa-solid fa-play"></i> Watch Stream</button>`}
-                        ${trailerKey ? `<button class="btn-trailer" id="modalTrailerBtn"><i class="fa-brands fa-youtube"></i> Trailer</button>` : ''}
+                        <button class="btn-trailer" id="modalTrailerBtn"><i class="fa-brands fa-youtube"></i> Trailer</button>
                         <button class="btn-wishlist ${inList ? 'in-list' : ''}" id="modalWishlistBtn">
                             ${inList ? '<i class="fa-solid fa-check"></i> In My List' : '<i class="fa-solid fa-plus"></i> My Wishlist'}
                         </button>
@@ -1204,13 +1358,15 @@ async function openDetailsModal(mediaId, type) {
             const playBtn = id('modalPlayBtn');
             if (playBtn) playBtn.onclick = () => openStream(mediaId, type);
         }
-        if (trailerKey) {
-            const trailerBtn = id('modalTrailerBtn');
-            if (trailerBtn) trailerBtn.onclick = () => {
+        
+        const trailerBtn = id('modalTrailerBtn');
+        if (trailerBtn) {
+            trailerBtn.onclick = () => {
                 closeModal();
-                playTrailer(trailerKey, title);
+                playEnhancedTrailer(mediaId, title, year, type);
             };
         }
+        
         const wishlistBtn = id('modalWishlistBtn');
         if (wishlistBtn) {
             wishlistBtn.onclick = (ev) => toggleWishlist(
@@ -1228,6 +1384,7 @@ async function openDetailsModal(mediaId, type) {
     }
 }
 
+// ============ MODAL CONTENT LOADERS ============
 async function loadModalProviders(mediaId, type) {
     const container = id('modalProviders');
     try {
@@ -1280,12 +1437,12 @@ async function loadModalSimilar(mediaId, type) {
 
 function closeModal() { id('detailsModal').classList.remove('show'); }
 
+// ============ STREAMING ============
 function openStream(mediaId, type, season = 1, episode = 1) {
     closeModal();
     const streamModal = id('streamModal');
     const iframe = id('streamIframe');
     
-    // Try multiple sources
     const sources = [
         `https://vidsrc.sbs/embed/${type}/${mediaId}${type === 'tv' ? `/${season}/${episode}` : ''}`,
         `https://vidsrc.to/embed/${type}/${mediaId}${type === 'tv' ? `/${season}/${episode}` : ''}`,
@@ -1300,7 +1457,6 @@ function openStream(mediaId, type, season = 1, episode = 1) {
     iframe.src = sources[0];
     streamModal.classList.add('show');
     
-    // Try alternative sources if first fails
     iframe.onerror = function() {
         currentIndex++;
         if (currentIndex < sources.length) {
@@ -1308,7 +1464,6 @@ function openStream(mediaId, type, season = 1, episode = 1) {
         }
     };
     
-    // Also try after timeout
     setTimeout(() => {
         if (currentIndex < sources.length - 1) {
             currentIndex++;
@@ -1324,6 +1479,7 @@ function closeStream() {
     streamModal.classList.remove('show');
 }
 
+// ============ UI HELPERS ============
 function handleHeaderScroll() {
     const header = id('mainHeader');
     if (window.scrollY > 50) {
@@ -1386,7 +1542,7 @@ function playTVShow79744(season = 1, episode = 1) {
     openStream(79744, 'tv', season, episode);
 }
 
-// Keyboard shortcuts
+// ============ KEYBOARD SHORTCUTS ============
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         closeModal();
@@ -1399,13 +1555,16 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+// ============ UTILITY ============
 function id(elementId) { return document.getElementById(elementId); }
 
 window.playTVShow79744 = playTVShow79744;
+window.playYouTubeVideo = playYouTubeVideo;
+window.playEnhancedTrailer = playEnhancedTrailer;
 
-console.log('🎬 YOUFLEX loaded!');
+console.log('🎬 YOUFLEX loaded with YouTube API v3!');
 console.log('📺 To play TV show 79744, run: playTVShow79744()');
-console.log('🎥 Trailers play directly on the site!');
+console.log('🎥 Enhanced trailers now use YouTube API v3');
 </script>
 </body>
 </html>
