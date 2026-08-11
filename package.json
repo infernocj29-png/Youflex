@@ -1,14 +1,24 @@
 {
-  "name": "youflex-server",
+  "name": "youflex",
   "version": "1.0.0",
+  "description": "YOUFLEX - Stream Movies & TV Shows with full backend API integration",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "nodemon server.js"
   },
+  "keywords": ["movies", "streaming", "tmdb", "video", "entertainment"],
+  "author": "YOUFLEX Team",
+  "license": "MIT",
   "dependencies": {
+    "express": "^4.18.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2"
+    "axios": "^1.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }
