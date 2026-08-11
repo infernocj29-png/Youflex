@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: youflex
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: TMDB_API_KEY
+        value: 33ef7aaa3002731060f718f25dd995ac
+      - key: YOUTUBE_API_KEY
+        value: AIzaSyCxCmXs4P4P8SenCmTlj5eawG4ccNP2FEg
+      - key: NODE_ENV
